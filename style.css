@@ -1,0 +1,178 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400..800&display=swap');
+
+:root {
+    --border-radius: 2px;
+    --shadow: 0 0 4px hsla(0, 0%, 40%, 0.5);
+    --shadow-hover: 0 0 6px hsla(0, 0%, 40%, 0.5);
+    --root-bg: hsl(20, 4%, 11%);
+    --card-width: 100px;
+    --card-height: 160px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--root-bg);
+    min-height: 100vh;
+    margin: 0;
+    padding: 6em 5em;
+    position: relative;
+}
+
+body,
+button {
+    font-family: 'Nunito', "Noto Sans", Tahoma, sans-serif;
+}
+
+#game {
+    /*place-self: center;*/
+    display: grid;
+    flex-direction: column;
+    grid-template-rows: auto 1fr auto;
+    background: #ccdadb;
+    width: 1200px;
+
+}
+
+#game_field {
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+}
+
+#game_field, .player_cards {
+    padding: .5em 2em;
+}
+
+.game_field_rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.player_cards, .game_field_row {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 2.5em;
+}
+
+.card_area {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: calc(var(--card-height) + 40px);
+    width: calc(var(--card-width));
+    text-align: center;
+}
+
+.card {
+    background: #a2a2a2;
+    font-size: 2em;
+    text-align: center;
+    place-content: center;
+    height: var(--card-height);
+    width: var(--card-width);
+    max-width: var(--card-width);
+    user-select: none;
+    touch-action: none;
+    flex-shrink: 0;
+    box-shadow: 0 0 2px #00000050;
+    border: 1px solid #00000044;
+    border-radius: 0.1em;
+    z-index: 10;
+}
+
+.card-up {
+    background: #d5d8dc;
+}
+
+[data-owner="0"] {
+    background-color: #e5e5f7;
+    opacity: .85;
+    background-image: linear-gradient(135deg, #1169cf 25%, transparent 25%), linear-gradient(225deg, #1169cf 25%, transparent 25%), linear-gradient(45deg, #1169cf 25%, transparent 25%), linear-gradient(315deg, #1169cf 25%, #e5e5f7 25%);
+    background-position:  10px 0, 10px 0, 0 0, 0 0;
+    background-size: 20px 20px;
+    background-repeat: repeat;
+    border: none;
+    box-shadow: 0 0 2px #000000aa;
+}
+
+.stack {
+    position: relative;
+    border: none;
+
+    &:before {
+        box-sizing: border-box;
+        content: ' ';
+        width: calc(var(--card-width));
+        height: calc(var(--card-height));
+        border: 1px solid #00000044;
+        border-radius: 0.2em;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+}
+
+.pile {
+    position: relative;
+    border: none;
+    width: 100%;
+
+    &:before {
+        box-sizing: border-box;
+        content: ' ';
+        width: calc(var(--card-width) - 2px);
+        height: calc(var(--card-height) - 2px);
+        position: absolute;
+        top: 1px;
+        border: 1px solid #00000044;
+        border-radius: 0.2em;
+        z-index: 0;
+    }
+}
+
+.pile_left {
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: row-reverse;
+    position: relative;
+
+    .card:last-child {
+        margin-left: -60px;
+        z-index: 100;
+    }
+
+    .card:not(:first-child) {
+        margin-right: -75px;
+        z-index: 90;
+    }
+
+    &:before {
+        right: 1px;
+    }
+}
+
+.pile_right {
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: row;
+    position: relative;
+
+    .card:last-child {
+        margin-right: -60px;
+        z-index: 100;
+    }
+
+    .card:not(:first-child) {
+        margin-left: -75px;
+        z-index: 90;
+    }
+
+    &:before {
+        left: 1px;
+    }
+}
+

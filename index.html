@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ee">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./style.css?v100">
+    <script type="module" src="constants.js"></script>
+    <script type="module" src="validation.js"></script>
+    <script type="module" src="render.js"></script>
+    <script type="module" src="utils.js"></script>
+    <script type="module" src="index.js"></script>
+    <title>Crapette</title>
+</head>
+<body>
+<main>
+    <section id="game">
+        <div id="player_two" class="row_3 player_cards">
+            <div id="p_two_reserve" class="card"></div>
+            <div id="p_two_card" class="card"></div>
+            <div id="p_two_deck" class="card"></div>
+        </div>
+        <div id="game_field" class="row_2">
+            <div class="game_field_rows">
+                <div class="game_field_row">
+                    <div id="pile_l_one" class="pile pile_left"></div>
+                    <div id="stack_l_one" class="card stack"></div>
+                    <div id="stack_r_one" class="card stack"></div>
+                    <div id="pile_r_one" class="pile pile_right"></div>
+                </div>
+                <div class="game_field_row">
+                    <div id="pile_l_two" class="pile pile_left"></div>
+                    <div id="stack_l_two" class="card stack"></div>
+                    <div id="stack_r_two" class="card stack"></div>
+                    <div id="pile_r_two" class="pile pile_right"></div>
+                </div>
+                <div class="game_field_row">
+                    <div id="pile_l_three" class="pile pile_left"></div>
+                    <div id="stack_l_three" class="card stack card"></div>
+                    <div id="stack_r_three" class="card stack card"></div>
+                    <div id="pile_r_three" class="pile pile_right">
+
+                    </div>
+                </div>
+                <div class="game_field_row">
+                    <div id="pile_l_four" class="pile pile_left"></div>
+                    <div id="stack_l_four" class="card stack card"></div>
+                    <div id="stack_r_four" class="card stack card"></div>
+                    <div id="pile_r_four" class="pile pile_right"></div>
+                </div>
+            </div>
+        </div>
+        <div id="player_one" class="row_3 player_cards">
+            <div id="p_one_reserve" class="card_area">
+                <div class="card reserve_card card-up"></div>
+                <span class="cards_left"></span>
+            </div>
+            <div id="p_one_card" class="card_area">
+                <div class="card main_card_one card-up"></div>
+                <span class="cards_left"></span>
+            </div>
+            <div id="p_one_deck" class="card_area">
+                <div class="card main_deck_one card-down"></div>
+                <span class="cards_left"></span>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>
