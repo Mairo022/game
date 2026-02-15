@@ -128,9 +128,7 @@ function on_card_pointer_up(e) {
 
         if (is_main_card) is_valid_move = handle_main_card_drop(id)
         if (is_reserve) is_valid_move = handle_reserve_card_drop(id)
-        if (is_pile_card) {
-            console.log(e)
-        }
+        if (is_pile_card) is_valid_move = handle_pile_card_drop(id, ghost.dataset.src)
 
         if (is_valid_move) update_piles(state)
     }
@@ -140,6 +138,19 @@ function on_card_pointer_up(e) {
 
     window.removeEventListener("pointermove", on_card_pointer_move);
     window.removeEventListener("pointerup", on_card_pointer_up);
+}
+
+function handle_pile_card_drop(target_id, src_id) {
+    const card = state[src_id].at(-1)
+
+    if (!is_valid_pile_drop(target_id, card, state))
+        return false;
+
+    state[target_id].push(state[src_id].at(-1));
+    state[src_id].pop();
+    update_piles(state);
+
+    return true;
 }
 
 function handle_reserve_card_drop(target_id) {

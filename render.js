@@ -60,6 +60,7 @@ function update_piles(state) {
 
             sample_pile_card.className = "card pile_left_card card-up";
             sample_pile_card.dataset.value = value
+            sample_pile_card.dataset.src = pile_id;
             sample_pile_card.textContent = value;
 
             pile.appendChild(sample_pile_card);
