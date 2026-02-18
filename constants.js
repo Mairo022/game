@@ -37,6 +37,12 @@ const suit_values = {
     "S": 0
 }
 
+const TARGETS = {
+    stack: 0,
+    pile: 1,
+    player: 2,
+}
+
 export {
     DECK_SIZE,
     SUITS,
@@ -45,5 +51,6 @@ export {
     pile_names,
     stack_names,
     rank_order,
-    suit_values
+    suit_values,
+    TARGETS
 }

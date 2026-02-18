@@ -1,4 +1,4 @@
-import {pile_names} from "./constants.js";
+import {pile_names, stack_names} from "./constants.js";
 
 function update_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state) {
     const el_reserve = el_player_reserve.querySelector(".reserve_card");
@@ -68,7 +68,23 @@ function update_piles(state) {
     }
 }
 
+function update_stacks(state) {
+    for (const stack_id of stack_names) {
+        const el_stack = document.querySelector(`#${stack_id}`);
+        const stack = state[stack_id];
+        const last_card = stack.at(-1);
+
+        if (!last_card) continue;
+
+        const value = last_card.split("-")[0]
+
+        el_stack.dataset.value = value;
+        el_stack.textContent = value;
+    }
+}
+
 export {
     update_player_cards,
-    update_piles
+    update_piles,
+    update_stacks
 }

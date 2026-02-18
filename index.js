@@ -1,6 +1,6 @@
-import {SUITS, RANKS, OWNERS, pile_names, stack_names} from "./constants.js"
-import {update_player_cards, update_piles} from "./render.js";
-import {is_valid_pile_drop} from "./validation.js";
+import {SUITS, RANKS, OWNERS, pile_names, stack_names, TARGETS} from "./constants.js"
+import {update_player_cards, update_piles, update_stacks} from "./render.js";
+import {is_valid_move} from "./validation.js";
 
 // Server side
 
@@ -119,18 +119,30 @@ function on_card_pointer_up(e) {
     const is_pile_card = (ghost.classList.contains("pile_left_card")
         || ghost.classList.contains("pile_right_card"));
 
-    if (e.target.parentElement.classList.contains("pile") || e.target.classList.contains("pile")) {
+    const is_pile_drop = (
+        e.target.parentElement.classList.contains("pile") || e.target.classList.contains("pile"));
+
+    if (is_pile_drop) {
         let is_valid_move = true;
         let id = e.target.id
 
         if (!id) id = e.target.parentElement.id;
         if (!id) console.error("Drop ID not found {on_card_pointer_up}")
 
-        if (is_main_card) is_valid_move = handle_main_card_drop(id)
-        if (is_reserve) is_valid_move = handle_reserve_card_drop(id)
-        if (is_pile_card) is_valid_move = handle_pile_card_drop(id, ghost.dataset.src)
+        if (is_main_card) is_valid_move = handle_main_card_drop(id, TARGETS.pile)
+        if (is_reserve) is_valid_move = handle_reserve_card_drop(id, TARGETS.pile)
+        if (is_pile_card) is_valid_move = handle_pile_card_drop(id, TARGETS.pile, ghost.dataset.src)
+    }
 
-        if (is_valid_move) update_piles(state)
+    const is_stack_drop = e.target.classList.contains("stack")
+
+    if (is_stack_drop) {
+        let is_valid_move = true;
+        const id = e.target.id;
+
+        if (is_main_card) is_valid_move = handle_main_card_drop(id, TARGETS.stack)
+        if (is_reserve) is_valid_move = handle_reserve_card_drop(id, TARGETS.stack)
+        if (is_pile_card) is_valid_move = handle_pile_card_drop(id, TARGETS.stack, ghost.dataset.src)
     }
 
     ghost.remove();
@@ -140,42 +152,46 @@ function on_card_pointer_up(e) {
     window.removeEventListener("pointerup", on_card_pointer_up);
 }
 
-function handle_pile_card_drop(target_id, src_id) {
+function handle_pile_card_drop(target_id, target, src_id) {
     const card = state[src_id].at(-1)
 
-    if (!is_valid_pile_drop(target_id, card, state))
-        return false;
-
+    if (!is_valid_move(target_id, card, state, target)) return false;
     state[target_id].push(state[src_id].at(-1));
     state[src_id].pop();
+
     update_piles(state);
-
-    return true;
-}
-
-function handle_reserve_card_drop(target_id) {
-    const card = state.player_reserve[0];
-
-    if (!is_valid_pile_drop(target_id, card, state))
-        return false;
-
-    state[target_id].push(card);
-    state.player_reserve.splice(0, 1)
+    update_stacks(state);
     update_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
 
     return true;
 }
 
-function handle_main_card_drop(target_id) {
+function handle_reserve_card_drop(target_id, target) {
+    const card = state.player_reserve[0];
+
+    if (!is_valid_move(target_id, card, state, target)) return false;
+
+    state[target_id].push(card);
+    state.player_reserve.splice(0, 1)
+
+    update_piles(state);
+    update_stacks(state);
+    update_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
+
+    return true;
+}
+
+function handle_main_card_drop(target_id, target) {
     const card = state.player_deck[state.card_index];
 
-    if (!is_valid_pile_drop(target_id, card, state)) {
-        return false;
-    }
+    if (!is_valid_move(target_id, card, state, target)) return false;
 
     state[target_id].push(card);
     state.player_deck.splice(state.card_index, 1)
     state.card_index--;
+
+    update_piles(state);
+    update_stacks(state);
     update_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
 
     return true;
