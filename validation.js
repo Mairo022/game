@@ -21,7 +21,7 @@ function is_valid_stack_drop(stack_id, card_str, state) {
 
     if (stack.length === 0) return card.rank_value === 1;
     if (stack_card.rank_value + 1 === card.rank_value
-        && stack_card.suit_value === card.suit_value) return true;
+        && stack_card.suit === card.suit) return true;
 
     return false;
 }
