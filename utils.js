@@ -16,6 +16,11 @@ function create_card_obj(card) {
     }
 }
 
+function arr_insert_at(array, index, ...elementsArray) {
+    array.splice(index, 0, ...elementsArray);
+}
+
 export {
-    create_card_obj
+    create_card_obj,
+    arr_insert_at
 }

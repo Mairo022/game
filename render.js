@@ -46,7 +46,6 @@ function update_player_cards(el_player_reserve, el_player_card_area, el_player_d
         el_deck.dataset.owner = "-1";
         el_deck_left.textContent = "";
     }
-    console.log(state)
 }
 
 function update_piles(state) {

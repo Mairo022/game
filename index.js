@@ -1,6 +1,7 @@
-import {SUITS, RANKS, OWNERS, pile_names, stack_names, TARGETS} from "./constants.js"
-import {update_player_cards, update_piles, update_stacks} from "./render.js";
+import {OWNERS, pile_names, RANKS, stack_names, SUITS, TARGETS} from "./constants.js"
+import {update_piles, update_player_cards, update_stacks} from "./render.js";
 import {is_valid_move} from "./validation.js";
+import {arr_insert_at} from "./utils.js";
 
 // Server side
 
@@ -33,7 +34,6 @@ const state = {
     opponent_deck: [],
     opponent_reserve: [],
     opponent_cards: [],
-    turn: 0,
     pile_l_one: [],
     pile_l_two: [],
     pile_l_three: [],
@@ -50,11 +50,15 @@ const state = {
     stack_r_two: [],
     stack_r_three: [],
     stack_r_four: [],
+    turn: 0,
 }
 
 state.player_reserve = deck.slice(0, 10);
 state.player_deck = deck.slice(10);
 state.card_index = 0;
+
+const card_width = document.querySelector(".card").getBoundingClientRect().width;
+const card_overlap = 75;
 
 const el_player_reserve = document.querySelector("#p_one_reserve")
 const el_player_card_area = document.querySelector("#p_one_card")
@@ -62,7 +66,6 @@ const el_player_deck_area = document.querySelector("#p_one_deck")
 
 update_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
 
-const game_field = document.querySelector("#game_field")
 // Moving the cards
 
 let ghost;
@@ -182,6 +185,7 @@ function handle_reserve_card_drop(target_id, target) {
 }
 
 function handle_main_card_drop(target_id, target) {
+    console.log(target_id, target)
     const card = state.player_deck[state.card_index];
 
     if (!is_valid_move(target_id, card, state, target)) return false;
@@ -224,3 +228,133 @@ function on_deck_click() {
     state.card_index++;
     update_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
 }
+
+// Socket mock
+// msg = src -> target -> state_id -> turn_id
+// state is to roll_back and to reject all gotten further moves server-side since invalid move
+// client sends moves 55 (Invalid), 56 (valid), 57 (valid), server sees 55 invalid and rejects 56, 57
+
+const waiting_moves_confirmation = []
+
+function get_coordinates_for_move(selector) {
+    const el = document.querySelector(selector);
+    if (!el) console.error(`Err: element ${selector} does not exist {get_coordinates_for_move}`)
+    const rect = el.getBoundingClientRect();
+    const coords = {
+        x: rect.left,
+        y: rect.y
+    };
+    console.log("{get_coordinates_for_move}\n", selector, ": ", rect)
+
+    if (el.classList.contains("pile")) {
+        const side = selector[6];
+
+        if (side !== 'r' && side !== 'l') {
+            console.error("Err: didnt find pile side {get_coordinates_for_move}");
+        }
+
+        if (el.hasChildNodes()) {
+            const last_card = el.lastChild;
+            const last_card_rect = last_card.getBoundingClientRect();
+            coords.x = side === 'l'
+                ? last_card_rect.left - (card_width - card_overlap)
+                : last_card_rect.right - card_overlap;
+            coords.y = last_card_rect.y;
+        } else {
+            coords.x = side === 'l' ? rect.right - card_width : rect.left;
+            coords.y = rect.y;
+        }
+    }
+
+    return coords;
+}
+
+function socket_on_get_move(msg) {
+    const [src, target, state_id, turn_id] = msg.split("-");
+
+    if (!src || !target || !state_id || !turn_id) {
+        console.error(`Err: socket get, no src/target/state_id/turn_id {socket_on_get_move}: ${msg}`);
+        return;
+    }
+
+    socket_behaviour_auto_move_card(src, target);
+    socket_behaviour_update_state(state, src, target);
+
+    setTimeout(() => {
+        update_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
+        update_piles(state);
+    }, 400)
+}
+
+function create_ghost(x, y, value) {
+    const ghost = document.createElement("div");
+    ghost.classList.add("card")
+    ghost.classList.add("card-up")
+    ghost.classList.add("ghosty") // Class for image
+    ghost.style.position = "fixed";
+    ghost.style.left = x + "px";
+    ghost.style.top = y + "px";
+    ghost.style.zIndex = "9999";
+    ghost.style.transition = "transform 0.4s ease-in-out";
+    ghost.textContent = value;
+    document.body.appendChild(ghost);
+    return ghost;
+}
+
+// Todo: match player_card ID and state key
+function socket_behaviour_auto_move_card(src, target) {
+    const src_coords = get_coordinates_for_move(`#${src}`);
+    const target_coords = get_coordinates_for_move(`#${target}`);
+
+    const card_value = state[src].at(-1).split("-")[0]
+    const ghost = create_ghost(src_coords.x, src_coords.y, card_value)
+
+    const dx = target_coords.x - src_coords.x;
+    const dy = target_coords.y - src_coords.y;
+
+    ghost.getBoundingClientRect();
+    ghost.style.transform = `translate(${dx}px, ${dy}px)`;
+
+    ghost.addEventListener('transitionend', (e) => {
+        ghost.remove();
+    });
+}
+
+// Todo: what if src is opponent deck or reserve?
+function socket_behaviour_update_state(state, src, target, id) {
+    // Just for testing, remove later
+    if (src === "player_deck") {
+        const src_card = state[src].at(state.card_index);
+        state[target].push(src_card);
+        state.player_deck.splice(state.card_index, 1)
+        state.card_index--;
+        return
+    }
+
+    if (target === "player_reserve") {
+        const target_card = state[target].at(-1);
+        state.player_reserve.push(target_card);
+        state[target_card].pop()
+    }
+    else if (target === "player_deck") {
+        const src_card = state[src].at(-1);
+        state.card_index++;
+        arr_insert_at(state[target], state.card_index, src_card);
+    }
+    else {
+        state[target].push(state[src].at(-1));
+        state[src].pop();
+    }
+}
+
+document.addEventListener("keyup", event => {
+    if (event.key === "o") {
+        socket_on_get_move("p_one_card-pile_r_one-10-1")
+    }
+    if (event.key === "p") {
+        socket_on_get_move("pile_r_two-pile_r_three-10-1")
+    }
+    if (event.key === "s") {
+        console.log(state)
+    }
+})
