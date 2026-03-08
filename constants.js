@@ -38,9 +38,11 @@ const suit_values = {
 }
 
 const TARGETS = {
-    stack: 0,
-    pile: 1,
-    player: 2,
+    unknown: 0,
+    stack: 1,
+    pile: 2,
+    player_pile: 3,
+    player_reserve: 4,
 }
 
 export {

@@ -29,7 +29,7 @@ function is_valid_stack_drop(stack_id, card_str, state) {
 function is_valid_move(target_id, card, state, target) {
     if (TARGETS.pile === target) return is_valid_pile_drop(target_id, card, state);
     if (TARGETS.stack === target) return is_valid_stack_drop(target_id, card, state);
-    if (TARGETS.player === target) {
+    if (TARGETS.player_pile === target) {
         console.error("Err: not implemented player check {is_valid_move}");
         return true;
     }

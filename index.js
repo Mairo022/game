@@ -70,39 +70,32 @@ function on_card_pointer_move(e) {
     ghost.style.top = (e.clientY - offset_y) + "px";
 }
 
-// Todo: commonalities of drops
 function on_card_pointer_up(e) {
     if (!ghost) return;
+    let src;
+    let target_type;
+    const target = e.target.id || e.target.parentElement?.id;
 
-    const is_reserve = ghost.classList.contains("reserve_card")
-    const is_main_card = ghost.classList.contains("main_card_one")
-    const is_pile_card = (ghost.classList.contains("pile_left_card")
-        || ghost.classList.contains("pile_right_card"));
+    if (!target) console.error("Error: drop ID not found");
 
-    const is_pile_drop = (
-        e.target.parentElement.classList.contains("pile") || e.target.classList.contains("pile"));
+    if (ghost.classList.contains("reserve_card"))
+        src = "player_reserve";
+    else if (ghost.classList.contains("main_card_one"))
+        src = "player_pile";
+    else if (ghost.classList.contains("pile_left_card") || ghost.classList.contains("pile_right_card"))
+        src = ghost.dataset.src;
+    else console.error(`Err: invalid ghost class {on_card_pointer_up} \n${ghost?.classList}`);
 
-    if (is_pile_drop) {
-        let is_valid_move = true;
-        let id = e.target.id
+    if (e.target.parentElement.classList.contains("pile") || e.target.classList.contains("pile"))
+        target_type = TARGETS.pile;
+    else if (e.target.classList.contains("stack"))
+        target_type = TARGETS.stack;
+    else if (e.target.classList.contains("main_card_one"))
+        target_type = TARGETS.player_pile;
+    else console.error(`Err: invalid drop element class {on_card_pointer_up} \n${e.target?.classList}`);
 
-        if (!id) id = e.target.parentElement.id;
-        if (!id) console.error("Drop ID not found {on_card_pointer_up}")
-
-        if (is_main_card) is_valid_move = handle_main_card_drop(id, TARGETS.pile)
-        if (is_reserve) is_valid_move = handle_reserve_card_drop(id, TARGETS.pile)
-        if (is_pile_card) is_valid_move = handle_pile_card_drop(id, TARGETS.pile, ghost.dataset.src)
-    }
-
-    const is_stack_drop = e.target.classList.contains("stack")
-
-    if (is_stack_drop) {
-        let is_valid_move = true;
-        const id = e.target.id;
-
-        if (is_main_card) is_valid_move = handle_main_card_drop(id, TARGETS.stack)
-        if (is_reserve) is_valid_move = handle_reserve_card_drop(id, TARGETS.stack)
-        if (is_pile_card) is_valid_move = handle_pile_card_drop(id, TARGETS.stack, ghost.dataset.src)
+    if (src && target_type && target) {
+        handle_card_drop(src, target, target_type)
     }
 
     ghost.remove();
@@ -112,38 +105,12 @@ function on_card_pointer_up(e) {
     window.removeEventListener("pointerup", on_card_pointer_up);
 }
 
-function handle_pile_card_drop(target_id, target, src_id) {
-    const card = state[src_id].at(-1)
+function handle_card_drop(src, target, target_type) {
+    const card = state[src].at(-1)
 
-    if (!is_valid_move(target_id, card, state, target)) return false;
+    if (!is_valid_move(target, card, state, target_type)) return false;
 
-    state_move_card(src_id, target_id);
-    render_piles(state);
-    render_stacks(state);
-    render_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
-
-    return true;
-}
-
-function handle_reserve_card_drop(target_id, target) {
-    const card = state.player_reserve.at(-1);
-
-    if (!is_valid_move(target_id, card, state, target)) return false;
-
-    state_move_card("player_reserve", target_id)
-    render_piles(state);
-    render_stacks(state);
-    render_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
-
-    return true;
-}
-
-function handle_main_card_drop(target_id, target) {
-    const card = state.player_pile.at(-1);
-
-    if (!is_valid_move(target_id, card, state, target)) return false;
-
-    state_move_card("player_pile", target_id)
+    state_move_card(src, target);
     render_piles(state);
     render_stacks(state);
     render_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
