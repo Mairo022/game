@@ -1,70 +1,26 @@
-import {OWNERS, pile_names, RANKS, stack_names, SUITS, TARGETS} from "./constants.js"
-import {update_piles, update_player_cards, update_stacks} from "./render.js";
+import {pile_names, stack_names, TARGETS} from "./constants.js"
+import {render_piles, render_player_cards, render_stacks} from "./render.js";
 import {is_valid_move} from "./validation.js";
-import {arr_insert_at} from "./utils.js";
+import {
+    state,
+    state_draw_card,
+    state_is_deck_empty,
+    state_is_player_pile_empty,
+    state_move_card,
+    state_pile_to_deck
+} from "./state.js";
 
-// Server side
-
-const deck = create_deck();
-shuffle(deck);
-
-function create_deck() {
-    return SUITS.flatMap(suit => RANKS.map(rank => `${suit}${rank}-${OWNERS[0]}`));
-}
-
-function shuffle(arr) {
-    let i = arr.length, j, temp;
-
-    while (--i > 0) {
-        j = Math.floor(Math.random() * (i + 1));
-        temp = arr[j];
-        arr[j] = arr[i];
-        arr[i] = temp;
-    }
-}
-
-// END
-
-// This file holds state and events
-
-const state = {
-    player_reserve: [],
-    player_deck: [],
-    card_index: 0,
-    opponent_deck: [],
-    opponent_reserve: [],
-    opponent_cards: [],
-    pile_l_one: [],
-    pile_l_two: [],
-    pile_l_three: [],
-    pile_l_four: [],
-    pile_r_one: [],
-    pile_r_two: [],
-    pile_r_three: [],
-    pile_r_four: [],
-    stack_l_one: [],
-    stack_l_two: [],
-    stack_l_three: [],
-    stack_l_four: [],
-    stack_r_one: [],
-    stack_r_two: [],
-    stack_r_three: [],
-    stack_r_four: [],
-    turn: 0,
-}
-
-state.player_reserve = deck.slice(0, 10);
-state.player_deck = deck.slice(10);
-state.card_index = 0;
 
 const card_width = document.querySelector(".card").getBoundingClientRect().width;
 const card_overlap = 75;
 
-const el_player_reserve = document.querySelector("#p_one_reserve")
-const el_player_card_area = document.querySelector("#p_one_card")
-const el_player_deck_area = document.querySelector("#p_one_deck")
+const el_player_reserve = document.querySelector("#p_reserve_area")
+const el_player_card_area = document.querySelector("#p_pile_area")
+const el_player_deck_area = document.querySelector("#p_deck_area")
 
-update_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
+render_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
+
+const game_field = document.querySelector("#game_field")
 
 // Moving the cards
 
@@ -114,6 +70,7 @@ function on_card_pointer_move(e) {
     ghost.style.top = (e.clientY - offset_y) + "px";
 }
 
+// Todo: commonalities of drops
 function on_card_pointer_up(e) {
     if (!ghost) return;
 
@@ -159,44 +116,37 @@ function handle_pile_card_drop(target_id, target, src_id) {
     const card = state[src_id].at(-1)
 
     if (!is_valid_move(target_id, card, state, target)) return false;
-    state[target_id].push(state[src_id].at(-1));
-    state[src_id].pop();
 
-    update_piles(state);
-    update_stacks(state);
-    update_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
+    state_move_card(src_id, target_id);
+    render_piles(state);
+    render_stacks(state);
+    render_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
 
     return true;
 }
 
 function handle_reserve_card_drop(target_id, target) {
-    const card = state.player_reserve[0];
+    const card = state.player_reserve.at(-1);
 
     if (!is_valid_move(target_id, card, state, target)) return false;
 
-    state[target_id].push(card);
-    state.player_reserve.splice(0, 1)
-
-    update_piles(state);
-    update_stacks(state);
-    update_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
+    state_move_card("player_reserve", target_id)
+    render_piles(state);
+    render_stacks(state);
+    render_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
 
     return true;
 }
 
 function handle_main_card_drop(target_id, target) {
-    console.log(target_id, target)
-    const card = state.player_deck[state.card_index];
+    const card = state.player_pile.at(-1);
 
     if (!is_valid_move(target_id, card, state, target)) return false;
 
-    state[target_id].push(card);
-    state.player_deck.splice(state.card_index, 1)
-    state.card_index--;
-
-    update_piles(state);
-    update_stacks(state);
-    update_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
+    state_move_card("player_pile", target_id)
+    render_piles(state);
+    render_stacks(state);
+    render_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
 
     return true;
 }
@@ -222,11 +172,14 @@ function create_ghost_card(card, position) {
 el_player_deck_area.addEventListener("click", on_deck_click);
 
 function on_deck_click() {
-    if (state.card_index === state.player_deck.length - 1) {
-        state.card_index = -1;
+    if (state_is_deck_empty()) {
+        if (state_is_player_pile_empty())
+            return;
+        state_pile_to_deck()
     }
-    state.card_index++;
-    update_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
+
+    state_draw_card()
+    render_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
 }
 
 // Socket mock
@@ -281,8 +234,8 @@ function socket_on_get_move(msg) {
     socket_behaviour_update_state(state, src, target);
 
     setTimeout(() => {
-        update_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
-        update_piles(state);
+        render_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
+        render_piles(state);
     }, 400)
 }
 
@@ -320,39 +273,16 @@ function socket_behaviour_auto_move_card(src, target) {
     });
 }
 
-// Todo: what if src is opponent deck or reserve?
 function socket_behaviour_update_state(state, src, target, id) {
-    // Just for testing, remove later
-    if (src === "player_deck") {
-        const src_card = state[src].at(state.card_index);
-        state[target].push(src_card);
-        state.player_deck.splice(state.card_index, 1)
-        state.card_index--;
-        return
-    }
-
-    if (target === "player_reserve") {
-        const target_card = state[target].at(-1);
-        state.player_reserve.push(target_card);
-        state[target_card].pop()
-    }
-    else if (target === "player_deck") {
-        const src_card = state[src].at(-1);
-        state.card_index++;
-        arr_insert_at(state[target], state.card_index, src_card);
-    }
-    else {
-        state[target].push(state[src].at(-1));
-        state[src].pop();
-    }
+    state_move_card(src, target);
 }
 
 document.addEventListener("keyup", event => {
     if (event.key === "o") {
-        socket_on_get_move("p_one_card-pile_r_one-10-1")
+        socket_on_get_move("pile_r_two-pile_r_one-10-1")
     }
     if (event.key === "p") {
-        socket_on_get_move("pile_r_two-pile_r_three-10-1")
+        socket_on_get_move("player_pile-pile_r_three-10-1")
     }
     if (event.key === "s") {
         console.log(state)

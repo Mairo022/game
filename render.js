@@ -1,9 +1,9 @@
 import {pile_names, stack_names} from "./constants.js";
 
-function update_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state) {
-    const el_reserve = el_player_reserve.querySelector(".reserve_card");
-    const el_card = el_player_card_area.querySelector(".main_card_one");
-    const el_deck = el_player_deck_area.querySelector(".main_deck_one");
+function render_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state) {
+    const el_reserve = el_player_reserve.querySelector("#player_reserve");
+    const el_card = el_player_card_area.querySelector("#player_pile");
+    const el_deck = el_player_deck_area.querySelector("#player_deck");
 
     const el_reserve_left = el_player_reserve.querySelector(".cards_left");
     const el_cards_left = el_player_card_area.querySelector(".cards_left");
@@ -11,7 +11,7 @@ function update_player_cards(el_player_reserve, el_player_card_area, el_player_d
 
     // Set reserve card
     if (state.player_reserve.length > 0) {
-        const card = state.player_reserve[0];
+        const card = state.player_reserve.at(-1);
         const value = card.split("-")[0]
         el_reserve.dataset.value = value;
         el_reserve.textContent = value;
@@ -22,13 +22,12 @@ function update_player_cards(el_player_reserve, el_player_card_area, el_player_d
         el_reserve_left.textContent = "";
     }
 
-    // Set main card
-    if (state.card_index >= 0) {
-        const card = state.player_deck[state.card_index];
+    if (state.player_pile.length > 0) {
+        const card = state.player_pile.at(-1);
         const value = card.split("-")[0]
         el_card.dataset.value = value;
         el_card.textContent = value;
-        el_cards_left.textContent = state.card_index + 1;
+        el_cards_left.textContent = state.player_pile.length;
     } else {
         el_card.dataset.value = "-1";
         el_card.textContent = "";
@@ -36,19 +35,18 @@ function update_player_cards(el_player_reserve, el_player_card_area, el_player_d
     }
 
     // Set deck
-    const cards_in_deck = (state.player_deck.length - (state.card_index + 1))
-    if (cards_in_deck > 0) {
-        const card = state.player_deck[state.card_index + 1];
+    if (state.player_deck.length > 0) {
+        const card = state.player_deck.at(-1);
         const [_, owner] = card.split("-")
         el_deck.dataset.owner = owner;
-        el_deck_left.textContent = cards_in_deck.toString();
+        el_deck_left.textContent = state.player_deck.length.toString();
     } else {
         el_deck.dataset.owner = "-1";
         el_deck_left.textContent = "";
     }
 }
 
-function update_piles(state) {
+function render_piles(state) {
     for (const pile_id of pile_names) {
         const pile = document.querySelector(`#${pile_id}`);
         pile.innerHTML = "";
@@ -67,7 +65,7 @@ function update_piles(state) {
     }
 }
 
-function update_stacks(state) {
+function render_stacks(state) {
     for (const stack_id of stack_names) {
         const el_stack = document.querySelector(`#${stack_id}`);
         const stack = state[stack_id];
@@ -83,7 +81,7 @@ function update_stacks(state) {
 }
 
 export {
-    update_player_cards,
-    update_piles,
-    update_stacks
+    render_player_cards,
+    render_piles,
+    render_stacks
 }

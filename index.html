@@ -8,6 +8,7 @@
     <script type="module" src="validation.js"></script>
     <script type="module" src="render.js"></script>
     <script type="module" src="utils.js"></script>
+    <script type="module" src="state.js"></script>
     <script type="module" src="index.js"></script>
     <title>Crapette</title>
 </head>
@@ -46,9 +47,7 @@
                     <div id="pile_l_three" class="pile pile_left"></div>
                     <div id="stack_l_three" class="card stack card"></div>
                     <div id="stack_r_three" class="card stack card"></div>
-                    <div id="pile_r_three" class="pile pile_right">
-
-                    </div>
+                    <div id="pile_r_three" class="pile pile_right"></div>
                 </div>
                 <div class="game_field_row">
                     <div id="pile_l_four" class="pile pile_left"></div>
@@ -58,17 +57,17 @@
                 </div>
             </div>
         </div>
-        <div id="player_one" class="row_3 player_cards">
-            <div id="p_one_reserve" class="card_area">
-                <div class="card reserve_card card-up"></div>
+        <div id="player" class="row_3 player_cards">
+            <div id="p_reserve_area" class="card_area">
+                <div id="player_reserve" class="card reserve_card card-up"></div>
                 <span class="cards_left"></span>
             </div>
-            <div id="p_one_card" class="card_area">
-                <div class="card main_card_one card-up"></div>
+            <div id="p_pile_area" class="card_area">
+                <div id="player_pile" class="card main_card_one card-up"></div>
                 <span class="cards_left"></span>
             </div>
-            <div id="p_one_deck" class="card_area">
-                <div class="card main_deck_one card-down"></div>
+            <div id="p_deck_area" class="card_area">
+                <div id="player_deck" class="card main_deck_one card-down"></div>
                 <span class="cards_left"></span>
             </div>
         </div>
