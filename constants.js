@@ -45,6 +45,9 @@ const TARGETS = {
     player_reserve: 4,
 }
 
+const card_width = 100;
+const card_overlap = 75;
+
 export {
     DECK_SIZE,
     SUITS,
@@ -54,5 +57,7 @@ export {
     stack_names,
     rank_order,
     suit_values,
-    TARGETS
+    TARGETS,
+    card_width,
+    card_overlap
 }

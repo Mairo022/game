@@ -1,4 +1,4 @@
-import {pile_names, stack_names, TARGETS} from "./constants.js"
+import {pile_names, TARGETS} from "./constants.js"
 import {render_piles, render_player_cards, render_stacks} from "./render.js";
 import {is_valid_move} from "./validation.js";
 import {
@@ -9,33 +9,30 @@ import {
     state_move_card,
     state_pile_to_deck
 } from "./state.js";
+import {
+    create_ghost_card_auto_move,
+    create_ghost_card_manual_move,
+    el_player_card_area, el_player_deck_area,
+    el_player_reserve,
+    ghost
+} from "./elements.js";
+import {get_coordinates_for_move} from "./utils.js";
 
+render_player_cards(state)
 
-const card_width = document.querySelector(".card").getBoundingClientRect().width;
-const card_overlap = 75;
-
-const el_player_reserve = document.querySelector("#p_reserve_area")
-const el_player_card_area = document.querySelector("#p_pile_area")
-const el_player_deck_area = document.querySelector("#p_deck_area")
-
-render_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
-
-const game_field = document.querySelector("#game_field")
+// Getting new card
+el_player_deck_area.addEventListener("click", on_deck_click);
 
 // Moving the cards
-
-let ghost;
-let offset_x = 0;
-let offset_y = 0;
-
-const pile_areas = pile_names.map(pile => document.getElementById(pile));
-const stack_areas = stack_names.map(stack => document.getElementById(stack));
-pile_areas.forEach(pile => {pile.addEventListener("pointerdown", on_pile_pointer_down)})
-
-const main_card = el_player_card_area.querySelector(".main_card_one");
-const reserve_card = el_player_reserve.querySelector(".reserve_card");
-main_card.addEventListener("pointerdown", on_card_pointer_down);
-reserve_card.addEventListener("pointerdown", on_card_pointer_down);
+let el_pile_areas = pile_names.map(pile => document.getElementById(pile));
+let el_main_card = el_player_card_area.querySelector(".main_card_one");
+let el_reserve_card = el_player_reserve.querySelector(".reserve_card");
+el_pile_areas.forEach(pile => {pile.addEventListener("pointerdown", on_pile_pointer_down)})
+el_main_card.addEventListener("pointerdown", on_card_pointer_down);
+el_reserve_card.addEventListener("pointerdown", on_card_pointer_down);
+el_pile_areas = null;
+el_main_card = null;
+el_reserve_card = null;
 
 function on_pile_pointer_down(e) {
     const card = e.target
@@ -49,7 +46,7 @@ function on_pile_pointer_down(e) {
     const last_pile_value = state[pile_id].at(-1).split("-")[0];
     if (last_pile_value !== value) return;
 
-    create_ghost_card(card, {e_x : e.clientX, e_y: e.clientY, r_l: rect.left, r_t: rect.top});
+    create_ghost_card_manual_move(card, {e_x : e.clientX, e_y: e.clientY, r_l: rect.left, r_t: rect.top});
     window.addEventListener("pointermove", on_card_pointer_move);
     window.addEventListener("pointerup", on_card_pointer_up);
 }
@@ -58,33 +55,33 @@ function on_card_pointer_down(e) {
     const card = e.currentTarget;
     const rect = card.getBoundingClientRect();
 
-    create_ghost_card(card, {e_x : e.clientX, e_y: e.clientY, r_l: rect.left, r_t: rect.top});
+    create_ghost_card_manual_move(card, {e_x : e.clientX, e_y: e.clientY, r_l: rect.left, r_t: rect.top});
     window.addEventListener("pointermove", on_card_pointer_move);
     window.addEventListener("pointerup", on_card_pointer_up);
 }
 
 function on_card_pointer_move(e) {
-    if (!ghost) return;
+    if (!ghost.el) return;
 
-    ghost.style.left = (e.clientX - offset_x) + "px";
-    ghost.style.top = (e.clientY - offset_y) + "px";
+    ghost.el.style.left = (e.clientX - ghost.offset_x) + "px";
+    ghost.el.style.top = (e.clientY - ghost.offset_y) + "px";
 }
 
 function on_card_pointer_up(e) {
-    if (!ghost) return;
+    if (!ghost.el) return;
     let src;
     let target_type;
     const target = e.target.id || e.target.parentElement?.id;
 
     if (!target) console.error("Error: drop ID not found");
 
-    if (ghost.classList.contains("reserve_card"))
+    if (ghost.el.classList.contains("reserve_card"))
         src = "player_reserve";
-    else if (ghost.classList.contains("main_card_one"))
+    else if (ghost.el.classList.contains("main_card_one"))
         src = "player_pile";
-    else if (ghost.classList.contains("pile_left_card") || ghost.classList.contains("pile_right_card"))
-        src = ghost.dataset.src;
-    else console.error(`Err: invalid ghost class {on_card_pointer_up} \n${ghost?.classList}`);
+    else if (ghost.el.classList.contains("pile_left_card") || ghost.el.classList.contains("pile_right_card"))
+        src = ghost.el.dataset.src;
+    else console.error(`Err: invalid ghost class {on_card_pointer_up} \n${ghost.el.classList}`);
 
     if (e.target.parentElement.classList.contains("pile") || e.target.classList.contains("pile"))
         target_type = TARGETS.pile;
@@ -98,8 +95,8 @@ function on_card_pointer_up(e) {
         handle_card_drop(src, target, target_type)
     }
 
-    ghost.remove();
-    ghost = null;
+    ghost.el.remove();
+    ghost.el = null;
 
     window.removeEventListener("pointermove", on_card_pointer_move);
     window.removeEventListener("pointerup", on_card_pointer_up);
@@ -113,30 +110,10 @@ function handle_card_drop(src, target, target_type) {
     state_move_card(src, target);
     render_piles(state);
     render_stacks(state);
-    render_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
+    render_player_cards(state)
 
     return true;
 }
-
-function create_ghost_card(card, position) {
-    console.log(position)
-    console.log(card)
-    offset_x = position.e_x - position.r_l;
-    offset_y = position.e_y - position.r_t;
-
-    ghost = card.cloneNode(true);
-    ghost.style.position = "fixed";
-    ghost.style.left = position.r_l + "px";
-    ghost.style.top = position.r_t + "px";
-    ghost.style.pointerEvents = "none";
-    ghost.style.zIndex = "9999";
-
-    document.body.appendChild(ghost);
-}
-
-// Getting new card
-
-el_player_deck_area.addEventListener("click", on_deck_click);
 
 function on_deck_click() {
     if (state_is_deck_empty()) {
@@ -146,7 +123,7 @@ function on_deck_click() {
     }
 
     state_draw_card()
-    render_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
+    render_player_cards(state)
 }
 
 // Socket mock
@@ -155,39 +132,6 @@ function on_deck_click() {
 // client sends moves 55 (Invalid), 56 (valid), 57 (valid), server sees 55 invalid and rejects 56, 57
 
 const waiting_moves_confirmation = []
-
-function get_coordinates_for_move(selector) {
-    const el = document.querySelector(selector);
-    if (!el) console.error(`Err: element ${selector} does not exist {get_coordinates_for_move}`)
-    const rect = el.getBoundingClientRect();
-    const coords = {
-        x: rect.left,
-        y: rect.y
-    };
-    console.log("{get_coordinates_for_move}\n", selector, ": ", rect)
-
-    if (el.classList.contains("pile")) {
-        const side = selector[6];
-
-        if (side !== 'r' && side !== 'l') {
-            console.error("Err: didnt find pile side {get_coordinates_for_move}");
-        }
-
-        if (el.hasChildNodes()) {
-            const last_card = el.lastChild;
-            const last_card_rect = last_card.getBoundingClientRect();
-            coords.x = side === 'l'
-                ? last_card_rect.left - (card_width - card_overlap)
-                : last_card_rect.right - card_overlap;
-            coords.y = last_card_rect.y;
-        } else {
-            coords.x = side === 'l' ? rect.right - card_width : rect.left;
-            coords.y = rect.y;
-        }
-    }
-
-    return coords;
-}
 
 function socket_on_get_move(msg) {
     const [src, target, state_id, turn_id] = msg.split("-");
@@ -201,24 +145,9 @@ function socket_on_get_move(msg) {
     socket_behaviour_update_state(state, src, target);
 
     setTimeout(() => {
-        render_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state)
+        render_player_cards(state)
         render_piles(state);
     }, 400)
-}
-
-function create_ghost(x, y, value) {
-    const ghost = document.createElement("div");
-    ghost.classList.add("card")
-    ghost.classList.add("card-up")
-    ghost.classList.add("ghosty") // Class for image
-    ghost.style.position = "fixed";
-    ghost.style.left = x + "px";
-    ghost.style.top = y + "px";
-    ghost.style.zIndex = "9999";
-    ghost.style.transition = "transform 0.4s ease-in-out";
-    ghost.textContent = value;
-    document.body.appendChild(ghost);
-    return ghost;
 }
 
 // Todo: match player_card ID and state key
@@ -227,7 +156,7 @@ function socket_behaviour_auto_move_card(src, target) {
     const target_coords = get_coordinates_for_move(`#${target}`);
 
     const card_value = state[src].at(-1).split("-")[0]
-    const ghost = create_ghost(src_coords.x, src_coords.y, card_value)
+    const ghost = create_ghost_card_auto_move(src_coords.x, src_coords.y, card_value)
 
     const dx = target_coords.x - src_coords.x;
     const dy = target_coords.y - src_coords.y;
