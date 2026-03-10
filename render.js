@@ -1,14 +1,7 @@
 import {pile_names, stack_names} from "./constants.js";
+import {el_reserve, el_deck, el_card, el_reserve_left, el_cards_left, el_deck_left} from "./elements.js";
 
-function render_player_cards(el_player_reserve, el_player_card_area, el_player_deck_area, state) {
-    const el_reserve = el_player_reserve.querySelector("#player_reserve");
-    const el_card = el_player_card_area.querySelector("#player_pile");
-    const el_deck = el_player_deck_area.querySelector("#player_deck");
-
-    const el_reserve_left = el_player_reserve.querySelector(".cards_left");
-    const el_cards_left = el_player_card_area.querySelector(".cards_left");
-    const el_deck_left = el_player_deck_area.querySelector(".cards_left");
-
+function render_player_cards(state) {
     // Set reserve card
     if (state.player_reserve.length > 0) {
         const card = state.player_reserve.at(-1);
@@ -27,7 +20,7 @@ function render_player_cards(el_player_reserve, el_player_card_area, el_player_d
         const value = card.split("-")[0]
         el_card.dataset.value = value;
         el_card.textContent = value;
-        el_cards_left.textContent = state.player_pile.length;
+        el_cards_left.textContent = state.player_pile.length.toString();
     } else {
         el_card.dataset.value = "-1";
         el_card.textContent = "";
