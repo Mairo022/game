@@ -1,4 +1,4 @@
-import {OWNERS, RANKS, SUITS} from "./constants.js";
+import {OWNERS, RANKS, SUITS, TARGETS} from "./constants.js";
 
 // Server side
 
@@ -26,9 +26,12 @@ const state = {
     player_reserve: [],
     player_pile: [],
     player_deck: [],
-    opponent_deck: [],
-    opponent_reserve: [],
-    opponent_cards: [],
+    opponent_deck: "_-1",
+    opponent_reserve: "S8-1",
+    opponent_pile: "H10-1",
+    opponent_reserve_length: 10,
+    opponent_pile_length: 1,
+    opponent_deck_length: 41,
     pile_l_one: [],
     pile_l_two: [],
     pile_l_three: [],
@@ -74,8 +77,18 @@ function state_pile_to_deck() {
 }
 
 function state_move_card(src, target) {
-    state[target].push(state[src].at(-1));
-    state[src].pop()
+    if (Array.isArray(state[target])) {
+        const card_value = Array.isArray(state[src]) ? state[src].at(-1).split("-")[0] : state[src].split("-")[0];
+        state[target].push(card_value);
+        if (Array.isArray(state[src])) state[src].pop();
+        return;
+    }
+
+    // Drop to opponent
+    state[target] = state[src].at(-1);
+    state[`${target}_length`] += 1;
+
+    state[src].pop();
 }
 
 export {

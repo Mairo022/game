@@ -41,8 +41,8 @@ const TARGETS = {
     unknown: 0,
     stack: 1,
     pile: 2,
-    player_pile: 3,
-    player_reserve: 4,
+    opponent_pile: 3,
+    opponent_reserve: 4,
 }
 
 const card_width = 100;

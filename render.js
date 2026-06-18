@@ -1,5 +1,14 @@
 import {pile_names, stack_names} from "./constants.js";
-import {el_reserve, el_deck, el_card, el_reserve_left, el_cards_left, el_deck_left} from "./elements.js";
+import {
+    el_reserve,
+    el_deck,
+    el_card,
+    el_reserve_left,
+    el_cards_left,
+    el_deck_left,
+    el_o_reserve,
+    el_o_reserve_left, el_o_card, el_o_pile_left, el_o_deck_left, el_o_deck
+} from "./elements.js";
 
 function render_player_cards(state) {
     // Set reserve card
@@ -73,7 +82,47 @@ function render_stacks(state) {
     }
 }
 
+function render_opponent_cards(state) {
+    // Set reserve card
+    if (state.opponent_reserve_length > 0) {
+        const card = state.opponent_reserve;
+        const value = card.split("-")[0];
+        el_o_reserve.dataset.value = value;
+        el_o_reserve.textContent = value;
+        el_o_reserve_left.textContent = (state.opponent_reserve_length).toString();
+    } else {
+        el_o_reserve.dataset.value = "-1";
+        el_o_reserve.textContent = "";
+        el_o_reserve_left.textContent = "";
+    }
+
+    if (state.opponent_pile_length > 0) {
+        const card = state.opponent_pile;
+        const value = card.split("-")[0];
+        el_o_card.dataset.value = value;
+        el_o_card.textContent = value;
+        el_o_pile_left.textContent = state.opponent_pile_length.toString();
+    } else {
+        el_o_card.dataset.value = "-1";
+        el_o_card.textContent = "";
+        el_o_pile_left.textContent = "";
+    }
+
+    // Set deck
+    if (state.opponent_deck_length > 0) {
+        const card = state.opponent_deck;
+        const [_, owner] = card.split("-")
+        el_o_deck.dataset.owner = owner;
+        el_o_deck_left.textContent = state.player_deck.length.toString();
+    } else {
+        el_o_deck.dataset.owner = "-1";
+        el_o_deck_left.textContent = "";
+    }
+
+}
+
 export {
+    render_opponent_cards,
     render_player_cards,
     render_piles,
     render_stacks

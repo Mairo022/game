@@ -26,12 +26,24 @@ function is_valid_stack_drop(stack_id, card_str, state) {
     return false;
 }
 
+function is_valid_opponent_drop(opponent_id, card_str, state) {
+    const opponent = state[opponent_id];
+    const opponent_card = create_card_obj(opponent);
+    const card = create_card_obj(card_str);
+
+    if (!opponent_card) return false;
+    if (opponent_card.rank_value + 1 === card.rank_value
+        || opponent_card.rank_value -1 === card.rank_value)
+        return true;
+
+    return false;
+}
+
 function is_valid_move(target_id, card, state, target) {
     if (TARGETS.pile === target) return is_valid_pile_drop(target_id, card, state);
     if (TARGETS.stack === target) return is_valid_stack_drop(target_id, card, state);
-    if (TARGETS.player_pile === target) {
-        console.error("Err: not implemented player check {is_valid_move}");
-        return true;
+    if (TARGETS.opponent_pile === target || TARGETS.opponent_reserve === target) {
+        return is_valid_opponent_drop(target_id, card, state);
     }
     console.error("Err: Unknown drop target {is_valid_move}");
     return false;

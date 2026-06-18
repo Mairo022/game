@@ -18,6 +18,16 @@ const el_cards_left = el_player_card_area.querySelector(".cards_left");
 const el_deck_left = el_player_deck_area.querySelector(".cards_left");
 //
 
+// Opponent elements
+let el_opponent = document.querySelector("#opponent");
+const el_o_reserve = el_opponent.querySelector("#opponent_reserve");
+const el_o_card = el_opponent.querySelector("#opponent_pile");
+const el_o_deck = el_opponent.querySelector("#opponent_deck");
+const el_o_reserve_left = el_opponent.querySelector("#o_reserve_area > .cards_left");
+const el_o_pile_left = el_opponent.querySelector("#o_pile_area > .cards_left");
+const el_o_deck_left = el_opponent.querySelector("#o_deck_area > .cards_left");
+//
+
 function create_ghost_card_auto_move(x, y, value) {
     const ghost = document.createElement("div");
     ghost.classList.add("card")
@@ -59,5 +69,12 @@ export {
     el_deck,
     el_deck_left,
     el_cards_left,
-    el_reserve_left
+    el_reserve_left,
+    el_o_reserve,
+    el_o_card,
+    el_o_deck,
+    el_o_pile_left,
+    el_o_deck_left,
+    el_opponent,
+    el_o_reserve_left
 }

@@ -1,5 +1,5 @@
 import {pile_names, TARGETS} from "./constants.js"
-import {render_piles, render_player_cards, render_stacks} from "./render.js";
+import {render_opponent_cards, render_piles, render_player_cards, render_stacks} from "./render.js";
 import {is_valid_move} from "./validation.js";
 import {
     state,
@@ -19,6 +19,7 @@ import {
 import {get_coordinates_for_move} from "./utils.js";
 
 render_player_cards(state)
+render_opponent_cards(state)
 
 // Getting new card
 el_player_deck_area.addEventListener("click", on_deck_click);
@@ -88,9 +89,13 @@ function on_card_pointer_up(e) {
     else if (e.target.classList.contains("stack"))
         target_type = TARGETS.stack;
     else if (e.target.classList.contains("main_card_one"))
-        target_type = TARGETS.player_pile;
+        target_type = TARGETS.opponent_pile;
+    else if (e.target.classList.contains("reserve_card")) {
+        target_type = TARGETS.opponent_reserve;
+    }
     else console.error(`Err: invalid drop element class {on_card_pointer_up} \n${e.target?.classList}`);
 
+    console.log(target_type);
     if (src && target_type && target) {
         handle_card_drop(src, target, target_type)
     }
@@ -110,7 +115,8 @@ function handle_card_drop(src, target, target_type) {
     state_move_card(src, target);
     render_piles(state);
     render_stacks(state);
-    render_player_cards(state)
+    render_player_cards(state);
+    render_opponent_cards(state);
 
     return true;
 }
@@ -155,7 +161,7 @@ function socket_behaviour_auto_move_card(src, target) {
     const src_coords = get_coordinates_for_move(`#${src}`);
     const target_coords = get_coordinates_for_move(`#${target}`);
 
-    const card_value = state[src].at(-1).split("-")[0]
+    const card_value = Array.isArray(state[src]) ? state[src].at(-1).split("-")[0] : state[src].split("-")[0];
     const ghost = create_ghost_card_auto_move(src_coords.x, src_coords.y, card_value)
 
     const dx = target_coords.x - src_coords.x;
@@ -179,6 +185,9 @@ document.addEventListener("keyup", event => {
     }
     if (event.key === "p") {
         socket_on_get_move("player_pile-pile_r_three-10-1")
+    }
+    if (event.key === "i") {
+        socket_on_get_move("opponent_pile-pile_r_three-10-1")
     }
     if (event.key === "s") {
         console.log(state)
