@@ -5,8 +5,8 @@
     --shadow: 0 0 4px hsla(0, 0%, 40%, 0.5);
     --shadow-hover: 0 0 6px hsla(0, 0%, 40%, 0.5);
     --root-bg: hsl(20, 4%, 11%);
-    --card-width: 110px;
-    --card-height: 160px;
+    --card-width: 115px;
+    --card-height: 172px;
 }
 
 * {
@@ -82,7 +82,6 @@ main {
 }
 
 .card {
-    background: #a2a2a2;
     font-size: 2em;
     text-align: center;
     place-content: center;
@@ -92,14 +91,14 @@ main {
     user-select: none;
     touch-action: none;
     flex-shrink: 0;
-    box-shadow: 0 0 2px #00000050;
-    border: 1px solid #00000044;
-    border-radius: 0.15em;
+    /*box-shadow: 0 0 2px #00000050;*/
+    border: 1px solid #8d8d8d;
+    border-radius: 11px;
     z-index: 10;
 }
 
 .card-up {
-    background: #f3f5f7;
+    background-color: #f3f5f7;
 }
 
 [data-owner="0"] {
@@ -178,7 +177,7 @@ main {
     height: var(--card-height);
     width: var(--card-width);
     flex-shrink: 0;
-    border-radius: 0.15em;
+    border-radius: 11px;
 
     &:before {
         box-sizing: border-box;
@@ -186,13 +185,31 @@ main {
         width: calc(var(--card-width) - 2px);
         height: calc(var(--card-height) - 2px);
         border: 1px solid #00000044;
-        border-radius: 0.15em;
+        border-radius: 11px;
         position: absolute;
         top: 1px;
-        left: 1px;
+        left: 2px;
         background-color: rgba(0,0,0,0.05);
+        z-index: 0;
+    }
+
+    &[data-value]::before {
+        display: none;
     }
 }
+
+.stack_left {
+    &:before {
+        left: 1px;
+    }
+}
+
+.stack_right {
+    &:before {
+        right: 1px;
+    }
+}
+
 
 .pile {
     position: relative;
@@ -207,7 +224,7 @@ main {
         position: absolute;
         top: 1px;
         border: 1px solid #00000044;
-        border-radius: 0.15em;
+        border-radius: 11px;
         z-index: 0;
         background-color: rgba(0,0,0,0.05);
     }
@@ -257,3 +274,67 @@ main {
     }
 }
 
+[data-value^="D"],
+[data-value^="H"] {
+    background: #00000000 no-repeat center;
+    background-size: 100% 100%;
+    border: 1px solid #8d8d8d;
+    font-size: 0;
+
+}
+
+[data-value="D2"] { background-image: url("./img/D2.webp"); }
+[data-value="D3"] { background-image: url("./img/D3.webp"); }
+[data-value="D4"] { background-image: url("./img/D4.webp"); }
+[data-value="D5"] { background-image: url("./img/D5.webp"); }
+[data-value="D6"] { background-image: url("./img/D6.webp"); }
+[data-value="D7"] { background-image: url("./img/D7.webp"); }
+[data-value="D8"] { background-image: url("./img/D8.webp"); }
+[data-value="D9"] { background-image: url("./img/D9.webp"); }
+[data-value="D10"] { background-image: url("./img/D10.webp"); }
+[data-value="DJ"] { background-image: url("./img/DJ.webp"); }
+[data-value="DQ"] { background-image: url("./img/DQ.webp"); }
+[data-value="DK"] { background-image: url("./img/DK.webp"); }
+[data-value="DA"] { background-image: url("./img/DA.webp"); }
+
+/*[data-value="C2"] { background-image: url("./img/C2.webp"); }*/
+/*[data-value="C3"] { background-image: url("./img/C3.webp"); }*/
+/*[data-value="C4"] { background-image: url("./img/C4.webp"); }*/
+/*[data-value="C5"] { background-image: url("./img/C5.webp"); }*/
+/*[data-value="C6"] { background-image: url("./img/C6.webp"); }*/
+/*[data-value="C7"] { background-image: url("./img/C7.webp"); }*/
+/*[data-value="C8"] { background-image: url("./img/C8.webp"); }*/
+/*[data-value="C9"] { background-image: url("./img/C9.webp"); }*/
+/*[data-value="C10"] { background-image: url("./img/C10.webp"); }*/
+/*[data-value="CJ"] { background-image: url("./img/CJ.webp"); }*/
+/*[data-value="CQ"] { background-image: url("./img/CQ.webp"); }*/
+/*[data-value="CK"] { background-image: url("./img/CK.webp"); }*/
+/*[data-value="CA"] { background-image: url("./img/CA.webp"); }*/
+
+[data-value="H2"] { background-image: url("./img/H2.webp"); }
+[data-value="H3"] { background-image: url("./img/H3.webp"); }
+[data-value="H4"] { background-image: url("./img/H4.webp"); }
+[data-value="H5"] { background-image: url("./img/H5.webp"); }
+[data-value="H6"] { background-image: url("./img/H6.webp"); }
+[data-value="H7"] { background-image: url("./img/H7.webp"); }
+[data-value="H8"] { background-image: url("./img/H8.webp"); }
+[data-value="H9"] { background-image: url("./img/H9.webp"); }
+[data-value="H10"] { background-image: url("./img/H10.webp"); }
+[data-value="HJ"] { background-image: url("./img/HJ.webp"); }
+[data-value="HQ"] { background-image: url("./img/HQ.webp"); }
+[data-value="HK"] { background-image: url("./img/HK.webp"); }
+[data-value="HA"] { background-image: url("./img/HA.webp"); }
+
+/*[data-value="S2"] { background-image: url("./img/S2.webp"); }*/
+/*[data-value="S3"] { background-image: url("./img/S3.webp"); }*/
+/*[data-value="S4"] { background-image: url("./img/S4.webp"); }*/
+/*[data-value="S5"] { background-image: url("./img/S5.webp"); }*/
+/*[data-value="S6"] { background-image: url("./img/S6.webp"); }*/
+/*[data-value="S7"] { background-image: url("./img/S7.webp"); }*/
+/*[data-value="S8"] { background-image: url("./img/S8.webp"); }*/
+/*[data-value="S9"] { background-image: url("./img/S9.webp"); }*/
+/*[data-value="S10"] { background-image: url("./img/S10.webp"); }*/
+/*[data-value="SJ"] { background-image: url("./img/SJ.webp"); }*/
+/*[data-value="SQ"] { background-image: url("./img/SQ.webp"); }*/
+/*[data-value="SK"] { background-image: url("./img/SK.webp"); }*/
+/*[data-value="SA"] { background-image: url("./img/SA.webp"); }*/
