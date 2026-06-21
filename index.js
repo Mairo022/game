@@ -17,6 +17,7 @@ import {
     ghost
 } from "./elements.js";
 import {get_coordinates_for_move} from "./utils.js";
+import {ws_send} from "./websocket.js";
 
 render_player_cards(state)
 render_opponent_cards(state)
@@ -88,14 +89,13 @@ function on_card_pointer_up(e) {
         target_type = TARGETS.pile;
     else if (e.target.classList.contains("stack"))
         target_type = TARGETS.stack;
-    else if (e.target.classList.contains("main_card_one"))
+    else if (e.target.id === "opponent_pile")
         target_type = TARGETS.opponent_pile;
-    else if (e.target.classList.contains("reserve_card")) {
+    else if (e.target === "opponent_reserve") {
         target_type = TARGETS.opponent_reserve;
     }
     else console.error(`Err: invalid drop element class {on_card_pointer_up} \n${e.target?.classList}`);
 
-    console.log(target_type);
     if (src && target_type && target) {
         handle_card_drop(src, target, target_type)
     }
@@ -175,6 +175,7 @@ function socket_behaviour_auto_move_card(src, target) {
     });
 }
 
+
 function socket_behaviour_update_state(state, src, target, id) {
     state_move_card(src, target);
 }
@@ -185,6 +186,7 @@ document.addEventListener("keyup", event => {
     }
     if (event.key === "p") {
         socket_on_get_move("player_pile-pile_r_three-10-1")
+        ws_send("cwhata");
     }
     if (event.key === "i") {
         socket_on_get_move("opponent_pile-pile_r_three-10-1")
@@ -193,3 +195,7 @@ document.addEventListener("keyup", event => {
         console.log(state)
     }
 })
+
+export default function readTest(data) {
+    console.log("From socket", data);
+}

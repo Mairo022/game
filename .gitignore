@@ -1,1 +1,9 @@
 .idea
+*.csproj.user
+*.user
+
+bin/
+obj/
+
+Properties/
+.vs
