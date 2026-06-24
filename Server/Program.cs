@@ -1,11 +1,13 @@
-﻿using System.Net.WebSockets;
+﻿using static Server.Utils;
+using System.Net.WebSockets;
 using System.Text;
+using Server;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-var rooms = new Dictionary<string, List<WebSocket>>();
-var connections = new Dictionary<string, WebSocket>();
+var connections = new Dictionary<string, Connection>();
+var rooms = new Dictionary<string, Room>();
 
 app.UseWebSockets();
 
@@ -18,48 +20,59 @@ app.Map("/ws", async context =>
     }
 
     var socket = await context.WebSockets.AcceptWebSocketAsync();
-    var connectionId = Guid.NewGuid().ToString();
-    connections.Add(connectionId, socket);
+    
+    var connection = new Connection(socket);
+    connections.Add(connection.Id, connection);
 
-    var buffer = new byte[1024];
+    Room? room = null;
+    var buffer = new byte[32];
     
     while (socket.State == WebSocketState.Open)
     {
         var result = await socket.ReceiveAsync(buffer, CancellationToken.None);
         
-        if (result.MessageType == WebSocketMessageType.Close) break;
+        if (!result.EndOfMessage) await socket.CloseAsync(
+            WebSocketCloseStatus.MessageTooBig,
+            "Msg too large",
+            CancellationToken.None);
+        
+        if (result.MessageType == WebSocketMessageType.Close)
+        {
+            connection.DisconnectFromRoom();
+            connections.Remove(connection.Id);
+            if (room?.Count == 0) rooms.Remove(room.Id);
+            break;
+        }
         
         var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
-        
         Console.WriteLine($@"Received {msg}");
-        
-        // Message handler
 
-        if (msg == "create_room")
-        {
-            var random = new Random();
-            var roomCode = random.Next(0, 10000).ToString("D4");
-            rooms.Add(roomCode, [socket]);
-            
-            if (!connections.TryGetValue(connectionId, out var socketFound))
-                return;
+        if (msg.StartsWith("create_room"))
+        { 
+            connection.DisconnectFromRoom();
+            if (room?.Count == 0) rooms.Remove(room.Id);
 
-            if (socketFound.State != WebSocketState.Open)
-                return;
+            room = new Room(connection, rooms);
+            rooms.Add(room.Id, room);
+            connection.Room = room;
 
-            var bytes = Encoding.UTF8.GetBytes($@"Joined room {roomCode}");
-
-            await socketFound.SendAsync(
-                bytes,
-                WebSocketMessageType.Text,
-                true,
-                CancellationToken.None
-            );
+            await SocketSendAsync(socket, $@"joined_room:{room.Id}");            
         }
-
-        if (msg == "join_room")
+        else if (msg.StartsWith("join_room"))
         {
-            
+            var split = msg.Split(':');
+            var roomCode = split[1];
+
+            if (!rooms.TryGetValue(roomCode, out var roomFound))
+            {
+                Console.WriteLine($"Room {roomCode} not found");
+                await SocketSendAsync(socket, $@"not_found:{roomCode}");
+                continue;
+            }
+                
+            roomFound.Connect(connection);
+            connection.Room = roomFound;
+            await SocketSendAsync(socket, $@"joined_room:{roomCode}");
         }
     }
 });

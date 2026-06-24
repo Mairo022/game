@@ -10,17 +10,38 @@ import {
     state_pile_to_deck
 } from "./state.js";
 import {
+    btn_create_room, btn_join_room,
     create_ghost_card_auto_move,
     create_ghost_card_manual_move,
     el_player_card_area, el_player_deck_area,
-    el_player_reserve,
-    ghost
+    el_player_reserve, el_player_ws_status, el_room_id,
+    ghost, inp_room_id
 } from "./elements.js";
 import {get_coordinates_for_move} from "./utils.js";
-import {ws_send} from "./websocket.js";
+import {ws_create_room, ws_join_room, ws_send} from "./websocket.js";
 
 render_player_cards(state)
 render_opponent_cards(state)
+
+inp_room_id.addEventListener("keyup", (e) => {
+    btn_join_room.disabled = inp_room_id.value.trim() === "";
+})
+
+btn_join_room.addEventListener("click", _ => {
+    ws_join_room(inp_room_id.value);
+})
+
+btn_create_room.addEventListener("click", _ => {
+    ws_create_room()
+})
+
+function ws_behaviour_set_room(room_id) {
+    el_room_id.textContent = room_id;
+}
+
+function ws_behaviour_set_player_connection(is_connected) {
+    el_player_ws_status.dataset.connected = is_connected;
+}
 
 // Getting new card
 el_player_deck_area.addEventListener("click", on_deck_click);
@@ -186,7 +207,7 @@ document.addEventListener("keyup", event => {
     }
     if (event.key === "p") {
         socket_on_get_move("player_pile-pile_r_three-10-1")
-        ws_send("cwhata");
+        ws_send("create_room");
     }
     if (event.key === "i") {
         socket_on_get_move("opponent_pile-pile_r_three-10-1")
@@ -196,6 +217,13 @@ document.addEventListener("keyup", event => {
     }
 })
 
-export default function readTest(data) {
+function readTest(data) {
     console.log("From socket", data);
+}
+
+
+export {
+    ws_behaviour_set_player_connection,
+    ws_behaviour_set_room,
+    readTest
 }

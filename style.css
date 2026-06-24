@@ -42,14 +42,46 @@ button {
 main {
     flex-grow: 1;
     place-content: center;
-
 }
 
 #game {
+    position: relative;
     display: grid;
     grid-template-rows: auto 1fr auto;
     height: 100%;
     max-height: 1200px;
+}
+
+.connection {
+    position: absolute;
+    top: 50px;
+    left: 50px;
+    display: flex;
+    flex-direction: column;
+    place-items: center;
+    gap: 8px;
+}
+
+#player_ws_status {
+    height: 24px;
+    width: 24px;
+    box-shadow: #00000022 0 0 2px;
+    border-radius: 50%;
+}
+
+[data-connected="1"] {
+    background-color: #18e118;
+    border: 1px solid #18c418;
+}
+
+[data-connected="0"] {
+    background-color: #dc3939;
+    border: 1px solid #c32c2c;
+}
+
+[data-connected="-1"] {
+    background-color: #ffd910;
+    border: 1px solid #e8c50e;
 }
 
 #game_field {

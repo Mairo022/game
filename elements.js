@@ -28,6 +28,12 @@ const el_o_pile_left = el_opponent.querySelector("#o_pile_area > .cards_left");
 const el_o_deck_left = el_opponent.querySelector("#o_deck_area > .cards_left");
 //
 
+const btn_create_room = document.querySelector("#create_room");
+const el_player_ws_status = document.querySelector("#player_ws_status");
+const el_room_id = document.querySelector("#room_id");
+const inp_room_id = document.querySelector("#input_room_id");
+const btn_join_room = document.querySelector("#join_room");
+
 function create_ghost_card_auto_move(x, y, value) {
     const ghost = document.createElement("div");
     ghost.classList.add("card")
@@ -76,5 +82,10 @@ export {
     el_o_pile_left,
     el_o_deck_left,
     el_opponent,
-    el_o_reserve_left
+    el_o_reserve_left,
+    btn_create_room,
+    el_player_ws_status,
+    el_room_id,
+    inp_room_id,
+    btn_join_room
 }

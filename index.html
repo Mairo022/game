@@ -10,6 +10,13 @@
 <body>
 <main>
     <section id="game">
+        <div class="connection">
+            <button id="create_room">Create room</button>
+            <div id="player_ws_status" data-connected="false"></div>
+            <div id="room_id">----</div>
+            <input type="text" id="input_room_id" placeholder="Room ID"/>
+            <button id="join_room" disabled>Join room</button>
+        </div>
         <div id="opponent" class="row_1 player_cards">
             <div id="o_reserve_area" class="card_area">
                 <span class="cards_left">10</span>
