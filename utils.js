@@ -1,4 +1,4 @@
-import {card_overlap, card_width, rank_order, suit_values} from "./constants.js";
+import {card_overlap, card_width, OWNERS, rank_order, RANKS, suit_values, SUITS} from "./constants.js";
 
 function create_card_obj(card) {
     if (!card) return null;
@@ -53,8 +53,25 @@ function get_coordinates_for_move(selector) {
     return coords;
 }
 
+function create_deck() {
+    return SUITS.flatMap(suit => RANKS.map(rank => `${suit}${rank}-${OWNERS[0]}`));
+}
+
+function shuffle(arr) {
+    let i = arr.length, j, temp;
+
+    while (--i > 0) {
+        j = Math.floor(Math.random() * (i + 1));
+        temp = arr[j];
+        arr[j] = arr[i];
+        arr[i] = temp;
+    }
+}
+
 export {
     create_card_obj,
     arr_insert_at,
-    get_coordinates_for_move
+    get_coordinates_for_move,
+    create_deck,
+    shuffle,
 }

@@ -43,6 +43,8 @@ function on_card_pointer_down(e) {
     const card = e.currentTarget;
     const rect = card.getBoundingClientRect();
 
+    if (!card.dataset?.value || card.dataset.value === '-1') return;
+
     create_ghost_card_manual_move(card, {e_x : e.clientX, e_y: e.clientY, r_l: rect.left, r_t: rect.top});
     window.addEventListener("pointermove", on_card_pointer_move);
     window.addEventListener("pointerup", on_card_pointer_up);
@@ -70,10 +72,10 @@ function on_card_pointer_up(e) {
         target_type = TARGETS.stack;
     else if (e.target.id === "opponent_pile")
         target_type = TARGETS.opponent_pile;
-    else if (e.target === "opponent_reserve") {
+    else if (e.target.id === "opponent_reserve") {
         target_type = TARGETS.opponent_reserve;
     }
-    else console.error(`Err: invalid drop element class {on_card_pointer_up} \n${e.target?.classList}`);
+    else console.error(`Err: invalid drop element {on_card_pointer_up} \nclass: ${e.target?.classList}, id: ${e.target?.id}`);
 
     if (src && target_type && target) {
         handle_card_drop(src, target, target_type)

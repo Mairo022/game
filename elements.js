@@ -34,6 +34,8 @@ const el_room_id = document.querySelector("#room_id");
 const inp_room_id = document.querySelector("#input_room_id");
 const btn_join_room = document.querySelector("#join_room");
 
+const btn_start_sp = document.querySelector("#start_sp");
+
 function create_ghost_card_auto_move(x, y, value) {
     const ghost = document.createElement("div");
     ghost.classList.add("card")
@@ -87,5 +89,6 @@ export {
     el_player_ws_status,
     el_room_id,
     inp_room_id,
-    btn_join_room
+    btn_join_room,
+    btn_start_sp
 }

@@ -54,7 +54,7 @@ function render_piles(state) {
         pile.innerHTML = "";
 
         for (const card_info of state[pile_id]) {
-            const sample_pile_card = document.createElement("div"); // create new div each time
+            const sample_pile_card = document.createElement("div");
             const value = card_info.split("-")[0];
 
             sample_pile_card.className = "card pile_left_card card-up";
@@ -84,24 +84,24 @@ function render_stacks(state) {
 
 function render_opponent_cards(state) {
     // Set reserve card
-    if (state.opponent_reserve_length > 0) {
-        const card = state.opponent_reserve;
+    if (state.opponent_reserve.length > 0) {
+        const card = state.opponent_reserve.at(-1);
         const value = card.split("-")[0];
         el_o_reserve.dataset.value = value;
         el_o_reserve.textContent = value;
-        el_o_reserve_left.textContent = (state.opponent_reserve_length).toString();
+        el_o_reserve_left.textContent = state.opponent_reserve.length.toString();
     } else {
         el_o_reserve.dataset.value = "-1";
         el_o_reserve.textContent = "";
         el_o_reserve_left.textContent = "";
     }
 
-    if (state.opponent_pile_length > 0) {
-        const card = state.opponent_pile;
+    if (state.opponent_pile.length > 0) {
+        const card = state.opponent_pile.at(-1);
         const value = card.split("-")[0];
         el_o_card.dataset.value = value;
         el_o_card.textContent = value;
-        el_o_pile_left.textContent = state.opponent_pile_length.toString();
+        el_o_pile_left.textContent = state.opponent_pile.length.toString();
     } else {
         el_o_card.dataset.value = "-1";
         el_o_card.textContent = "";
@@ -109,8 +109,8 @@ function render_opponent_cards(state) {
     }
 
     // Set deck
-    if (state.opponent_deck_length > 0) {
-        const card = state.opponent_deck;
+    if (state.opponent_deck.length > 0) {
+        const card = state.opponent_deck.at(-1);
         const [_, owner] = card.split("-")
         el_o_deck.dataset.owner = owner;
         el_o_deck_left.textContent = state.player_deck.length.toString();
@@ -118,12 +118,19 @@ function render_opponent_cards(state) {
         el_o_deck.dataset.owner = "-1";
         el_o_deck_left.textContent = "";
     }
+}
 
+function render_all(state) {
+    render_player_cards(state);
+    render_opponent_cards(state);
+    render_piles(state);
+    render_stacks(state);
 }
 
 export {
     render_opponent_cards,
     render_player_cards,
     render_piles,
-    render_stacks
+    render_stacks,
+    render_all
 }

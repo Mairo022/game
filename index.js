@@ -1,23 +1,25 @@
 import {pile_names} from "./constants.js"
-import {render_opponent_cards, render_piles, render_player_cards, render_stacks} from "./render.js";
+import {render_all, render_piles, render_player_cards} from "./render.js";
 import {is_valid_move} from "./validation.js";
 import {
+    reset_state,
     state,
     state_move_card,
 } from "./state.js";
 import {
-    btn_create_room, btn_join_room,
+    btn_create_room, btn_join_room, btn_start_sp,
     create_ghost_card_auto_move,
     el_player_card_area, el_player_deck_area,
     el_player_reserve, el_player_ws_status, el_room_id,
     inp_room_id
 } from "./elements.js";
-import {get_coordinates_for_move} from "./utils.js";
+import {create_deck, get_coordinates_for_move, shuffle} from "./utils.js";
 import {ws_create_room, ws_join_room, ws_send} from "./websocket.js";
 import {on_card_pointer_down, on_deck_click, on_pile_pointer_down} from "./events.js";
 
-render_player_cards(state)
-render_opponent_cards(state)
+btn_start_sp.addEventListener("click", (e) => {
+    handle_game_start(false);
+})
 
 inp_room_id.addEventListener("keyup", (e) => {
     btn_join_room.disabled = inp_room_id.value.trim() === "";
@@ -53,16 +55,36 @@ el_pile_areas = null;
 el_main_card = null;
 el_reserve_card = null;
 
+function handle_game_start(is_mp) {
+    reset_state()
+
+    if (is_mp) {
+        state.is_mp = true;
+
+    } else {
+        state.is_mp = false;
+
+        const deck = create_deck();
+        shuffle(deck);
+        state.player_reserve = deck.slice(0, 10);
+        state.player_deck = deck.slice(10);
+
+        const deck2 = create_deck();
+        shuffle(deck2);
+        state.opponent_reserve = deck2.slice(0, 10);
+        state.opponent_deck = deck2.slice(10);
+    }
+
+    render_all(state);
+}
+
 function handle_card_drop(src, target, target_type) {
     const card = state[src].at(-1)
 
     if (!is_valid_move(target, card, state, target_type)) return false;
 
     state_move_card(src, target);
-    render_piles(state);
-    render_stacks(state);
-    render_player_cards(state);
-    render_opponent_cards(state);
+    render_all(state);
 
     return true;
 }

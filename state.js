@@ -1,58 +1,38 @@
-import {OWNERS, RANKS, SUITS, TARGETS} from "./constants.js";
+const state = create_state();
 
-// Server side
-
-const deck = create_deck();
-shuffle(deck);
-
-function create_deck() {
-    return SUITS.flatMap(suit => RANKS.map(rank => `${suit}${rank}-${OWNERS[0]}`));
-}
-
-function shuffle(arr) {
-    let i = arr.length, j, temp;
-
-    while (--i > 0) {
-        j = Math.floor(Math.random() * (i + 1));
-        temp = arr[j];
-        arr[j] = arr[i];
-        arr[i] = temp;
+// SP uses lists, MP uses first value in list
+function create_state() {
+    return {
+        player_reserve: [],
+        player_pile: [],
+        player_deck: [],
+        opponent_deck: [],
+        opponent_reserve: [],
+        opponent_pile: [],
+        pile_l_one: [],
+        pile_l_two: [],
+        pile_l_three: [],
+        pile_l_four: [],
+        pile_r_one: [],
+        pile_r_two: [],
+        pile_r_three: [],
+        pile_r_four: [],
+        stack_l_one: [],
+        stack_l_two: [],
+        stack_l_three: [],
+        stack_l_four: [],
+        stack_r_one: [],
+        stack_r_two: [],
+        stack_r_three: [],
+        stack_r_four: [],
+        turn: 0,
+        is_mp: false
     }
 }
 
-// END
-
-const state = {
-    player_reserve: [],
-    player_pile: [],
-    player_deck: [],
-    opponent_deck: "_-1",
-    opponent_reserve: "S8-1",
-    opponent_pile: "H10-1",
-    opponent_reserve_length: 10,
-    opponent_pile_length: 1,
-    opponent_deck_length: 41,
-    pile_l_one: [],
-    pile_l_two: [],
-    pile_l_three: [],
-    pile_l_four: [],
-    pile_r_one: [],
-    pile_r_two: [],
-    pile_r_three: [],
-    pile_r_four: [],
-    stack_l_one: [],
-    stack_l_two: [],
-    stack_l_three: [],
-    stack_l_four: [],
-    stack_r_one: [],
-    stack_r_two: [],
-    stack_r_three: [],
-    stack_r_four: [],
-    turn: 0,
+function reset_state() {
+    Object.assign(state, create_state());
 }
-
-state.player_reserve = deck.slice(0, 10);
-state.player_deck = deck.slice(10);
 
 function state_draw_card() {
     state.player_pile.push(state.player_deck.at(-1));
@@ -77,22 +57,14 @@ function state_pile_to_deck() {
 }
 
 function state_move_card(src, target) {
-    if (Array.isArray(state[target])) {
-        const card_value = Array.isArray(state[src]) ? state[src].at(-1).split("-")[0] : state[src].split("-")[0];
-        state[target].push(card_value);
-        if (Array.isArray(state[src])) state[src].pop();
-        return;
-    }
-
-    // Drop to opponent
-    state[target] = state[src].at(-1);
-    state[`${target}_length`] += 1;
-
-    state[src].pop();
+    const card_value = Array.isArray(state[src]) ? state[src].at(-1).split("-")[0] : state[src].split("-")[0];
+    state[target].push(card_value);
+    if (Array.isArray(state[src])) state[src].pop();
 }
 
 export {
     state,
+    reset_state,
     state_draw_card,
     state_is_deck_empty,
     state_is_reserve_empty,

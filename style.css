@@ -113,6 +113,10 @@ main {
     text-align: center;
 }
 
+.cards_left {
+    height: 24px;
+}
+
 .card {
     font-size: 2em;
     text-align: center;

@@ -27,13 +27,14 @@ function is_valid_stack_drop(stack_id, card_str, state) {
 }
 
 function is_valid_opponent_drop(opponent_id, card_str, state) {
-    const opponent = state[opponent_id];
+    const opponent = state[opponent_id].at(-1);
     const opponent_card = create_card_obj(opponent);
     const card = create_card_obj(card_str);
 
     if (!opponent_card) return false;
-    if (opponent_card.rank_value + 1 === card.rank_value
-        || opponent_card.rank_value -1 === card.rank_value)
+    if ((opponent_card.rank_value + 1 === card.rank_value
+        || opponent_card.rank_value - 1 === card.rank_value
+        ) && opponent_card.suit === card.suit)
         return true;
 
     return false;
