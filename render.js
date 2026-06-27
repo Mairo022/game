@@ -17,7 +17,8 @@ function render_player_cards(state) {
         const value = card.split("-")[0]
         el_reserve.dataset.value = value;
         el_reserve.textContent = value;
-        el_reserve_left.textContent = (state.player_reserve.length).toString();
+        el_reserve_left.textContent = state.is_mp
+            ? state.player_cards_len[0] : (state.player_reserve.length).toString();
     } else {
         el_reserve.dataset.value = "-1";
         el_reserve.textContent = "";
@@ -29,7 +30,8 @@ function render_player_cards(state) {
         const value = card.split("-")[0]
         el_card.dataset.value = value;
         el_card.textContent = value;
-        el_cards_left.textContent = state.player_pile.length.toString();
+        el_cards_left.textContent = state.is_mp
+            ? state.player_cards_len[1] : state.player_pile.length.toString();
     } else {
         el_card.dataset.value = "-1";
         el_card.textContent = "";
@@ -41,7 +43,8 @@ function render_player_cards(state) {
         const card = state.player_deck.at(-1);
         const [_, owner] = card.split("-")
         el_deck.dataset.owner = owner;
-        el_deck_left.textContent = state.player_deck.length.toString();
+        el_deck_left.textContent = state.is_mp
+            ? state.player_cards_len[2] : state.player_deck.length.toString();
     } else {
         el_deck.dataset.owner = "-1";
         el_deck_left.textContent = "";
@@ -89,7 +92,8 @@ function render_opponent_cards(state) {
         const value = card.split("-")[0];
         el_o_reserve.dataset.value = value;
         el_o_reserve.textContent = value;
-        el_o_reserve_left.textContent = state.opponent_reserve.length.toString();
+        el_o_reserve_left.textContent = state.is_mp
+            ? state.player_cards_len[0] : state.opponent_reserve.length.toString();
     } else {
         el_o_reserve.dataset.value = "-1";
         el_o_reserve.textContent = "";
@@ -101,7 +105,8 @@ function render_opponent_cards(state) {
         const value = card.split("-")[0];
         el_o_card.dataset.value = value;
         el_o_card.textContent = value;
-        el_o_pile_left.textContent = state.opponent_pile.length.toString();
+        el_o_pile_left.textContent = state.is_mp
+            ? state.player_cards_len[1] : state.opponent_pile.length.toString();
     } else {
         el_o_card.dataset.value = "-1";
         el_o_card.textContent = "";
@@ -113,7 +118,8 @@ function render_opponent_cards(state) {
         const card = state.opponent_deck.at(-1);
         const [_, owner] = card.split("-")
         el_o_deck.dataset.owner = owner;
-        el_o_deck_left.textContent = state.player_deck.length.toString();
+        el_o_deck_left.textContent = state.is_mp
+            ? state.player_cards_len[2] : state.player_deck.length.toString();
     } else {
         el_o_deck.dataset.owner = "-1";
         el_o_deck_left.textContent = "";

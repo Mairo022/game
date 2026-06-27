@@ -160,5 +160,6 @@ export {
     ws_behaviour_set_player_connection,
     ws_behaviour_set_room,
     readTest,
-    handle_card_drop
+    handle_card_drop,
+    handle_game_start
 }

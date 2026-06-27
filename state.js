@@ -5,10 +5,12 @@ function create_state() {
     return {
         player_reserve: [],
         player_pile: [],
-        player_deck: [],
-        opponent_deck: [],
+        player_deck: [], // SP only
+        player_cards_len: [0, 0, 0],
+        opponent_deck: [], // SP only
         opponent_reserve: [],
         opponent_pile: [],
+        opponent_cards_len: [0, 0, 0],
         pile_l_one: [],
         pile_l_two: [],
         pile_l_three: [],
@@ -62,6 +64,10 @@ function state_move_card(src, target) {
     if (Array.isArray(state[src])) state[src].pop();
 }
 
+function state_apply_snapshot(snap) {
+    Object.assign(state, snap);
+}
+
 export {
     state,
     reset_state,
@@ -71,4 +77,5 @@ export {
     state_is_player_pile_empty,
     state_pile_to_deck,
     state_move_card,
+    state_apply_snapshot,
 }

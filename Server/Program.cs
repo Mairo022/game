@@ -56,23 +56,29 @@ app.Map("/ws", async context =>
             rooms.Add(room.Id, room);
             connection.Room = room;
 
-            await SocketSendAsync(socket, $@"joined_room:{room.Id}");            
+            await SocketSendAsync(socket, $@"joined_room:{room.Id}");
+            await room.SendSnapshot();
         }
         else if (msg.StartsWith("join_room"))
         {
             var split = msg.Split(':');
             var roomCode = split[1];
 
-            if (!rooms.TryGetValue(roomCode, out var roomFound))
+            if (!rooms.TryGetValue(roomCode, out room))
             {
                 Console.WriteLine($"Room {roomCode} not found");
                 await SocketSendAsync(socket, $@"not_found:{roomCode}");
                 continue;
             }
                 
-            roomFound.Connect(connection);
-            connection.Room = roomFound;
+            room.Connect(connection);
+            connection.Room = room;
             await SocketSendAsync(socket, $@"joined_room:{roomCode}");
+            await room.SendSnapshot();
+        }
+        else
+        {
+            room?.HandleMessage(connection, msg);
         }
     }
 });

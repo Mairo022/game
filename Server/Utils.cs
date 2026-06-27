@@ -14,4 +14,18 @@ public static class Utils
             CancellationToken.None
         );
     }
+    
+    private static readonly Random Rng = new();
+
+    public static void Shuffle<T>(IList<T> arr)
+    {
+        int i = arr.Count;
+        int j;
+
+        while (--i > 0)
+        {
+            j = Rng.Next(i + 1);
+            (arr[i], arr[j]) = (arr[j], arr[i]);
+        }
+    }
 }

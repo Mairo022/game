@@ -3,8 +3,16 @@ import {create_ghost_card_manual_move, ghost} from "./elements.js";
 import {TARGETS} from "./constants.js";
 import {handle_card_drop} from "./index.js";
 import {render_player_cards} from "./render.js";
+import {ws_draw_card} from "./websocket.js";
 
 function on_deck_click() {
+    if (state.is_mp)
+    {
+        ws_draw_card();
+        render_player_cards(state)
+        return;
+    }
+
     if (state_is_deck_empty()) {
         if (state_is_player_pile_empty())
             return;
