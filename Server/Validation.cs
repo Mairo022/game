@@ -1,0 +1,59 @@
+namespace Server;
+using static Server.Constants;
+
+public static class Validation
+{
+    // Todo: check for player_id in Room to determine if is their move
+    public static bool IsValidMove(MoveMessage incoming, ref GameState state)
+    {
+        var src = State.GetList(incoming.Src, ref state);
+        var dst = State.GetList(incoming.Target, ref state);
+        if (src is null || dst is null ) { Console.WriteLine("Could not find src/dst list"); return false; }
+        if (src.Count == 0) return false;
+        
+        if (incoming.Target.StartsWith("pile")) return IsValidPileDrop(src, dst);
+        if (incoming.Target.StartsWith("stack")) return IsValidStackDrop(src, dst);
+        if (incoming.Target.StartsWith("opponent") || incoming.Target.StartsWith("player")) 
+            return IsValidPlayerDrop(src, dst);
+        
+        return false;
+    }
+    
+    static bool IsValidPileDrop(List<Card> src, List<Card> dst)
+    {
+        var srcCard = src.Last();
+        var dstCard = dst.LastOrDefault();
+        
+        if (srcCard.RankValue == RANK_VALUE.A) return false;
+        if (dst.Count == 0) return true;
+        if (srcCard.SuitValue == dstCard.SuitValue) return false;
+        if (srcCard.RankValue >= dstCard.RankValue) return false;
+        
+        return true;
+    }
+    
+    static bool IsValidStackDrop(List<Card> src, List<Card> dst)
+    {
+        var srcCard = src.Last();
+        var dstCard = dst.LastOrDefault();
+        
+        if (dst.Count == 0) return (int) src.Last().RankValue == 1;
+        if (srcCard.RankValue == dstCard.RankValue + 1 && srcCard.Suit == dstCard.Suit) return true;
+        
+        return false;
+    }
+    
+    static bool IsValidPlayerDrop(List<Card> src, List<Card> dst)
+    {
+        var srcCard = src.Last();
+        var dstCard = dst.LastOrDefault();
+
+        if (dst.Count == 0) return false;
+        if ((srcCard.RankValue + 1 == dstCard.RankValue || srcCard.RankValue -1 == dstCard.RankValue)
+            && srcCard.Suit == dstCard.Suit) 
+            return true;
+        
+        return false;
+    }
+}
+

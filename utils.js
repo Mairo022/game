@@ -1,4 +1,5 @@
 import {card_overlap, card_width, OWNERS, rank_order, RANKS, suit_values, SUITS} from "./constants.js";
+import {state} from "./state.js";
 
 function create_card_obj(card) {
     if (!card) return null;
@@ -18,6 +19,16 @@ function create_card_obj(card) {
 
 function arr_insert_at(array, index, ...elementsArray) {
     array.splice(index, 0, ...elementsArray);
+}
+
+function create_move_obj(src, target) {
+    return {
+        Type: "move",
+        Src: src,
+        Target: target,
+        Player: state.player, // No need, but nice for debugging
+        State: state.state
+    }
 }
 
 function get_coordinates_for_move(selector) {
@@ -74,4 +85,5 @@ export {
     get_coordinates_for_move,
     create_deck,
     shuffle,
+    create_move_obj
 }

@@ -13,8 +13,8 @@ import {
     el_player_reserve, el_player_ws_status, el_room_id,
     inp_room_id
 } from "./elements.js";
-import {create_deck, get_coordinates_for_move, shuffle} from "./utils.js";
-import {ws_create_room, ws_join_room, ws_send} from "./websocket.js";
+import {create_deck, create_move_obj, get_coordinates_for_move, shuffle} from "./utils.js";
+import {ws_create_room, ws_join_room, ws_send, ws_send_move} from "./websocket.js";
 import {on_card_pointer_down, on_deck_click, on_pile_pointer_down} from "./events.js";
 
 btn_start_sp.addEventListener("click", (e) => {
@@ -39,6 +39,18 @@ function ws_behaviour_set_room(room_id) {
 
 function ws_behaviour_set_player_connection(is_connected) {
     el_player_ws_status.dataset.connected = is_connected;
+}
+
+function ws_behaviour_draw_card_player(card) {
+    state.player_pile.push(card);
+    state.player_cards_len[1]++;
+    state.player_cards_len[2]--;
+}
+
+function ws_behaviour_draw_card_opponent(card) {
+    state.player_pile.push(card);
+    state.player_cards_len[1]++;
+    state.player_cards_len[2]--;
 }
 
 // Getting new card
@@ -74,7 +86,7 @@ function handle_game_start(is_mp) {
         state.opponent_reserve = deck2.slice(0, 10);
         state.opponent_deck = deck2.slice(10);
     }
-
+    console.log(state)
     render_all(state);
 }
 
@@ -85,6 +97,8 @@ function handle_card_drop(src, target, target_type) {
 
     state_move_card(src, target);
     render_all(state);
+
+    if (state.is_mp) ws_send_move(create_move_obj(src, target))
 
     return true;
 }

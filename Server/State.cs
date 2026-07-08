@@ -2,65 +2,211 @@ using System.Text.Json.Serialization;
 
 namespace Server;
 using static Server.Utils;
+using static Server.Constants;
+
+public readonly struct Card(string suit, string rank, int owner)
+{
+    public readonly string Name = $"{suit}{rank}-{owner}";
+    public readonly string Suit = suit;
+    public readonly string Rank = rank;
+    public readonly RANK_VALUE RankValue = GetRank(rank);
+    public readonly SUIT_VALUE SuitValue = Enum.Parse<SUIT_VALUE>(suit);
+    public readonly int Owner = owner;
+}
+
+public class State
+{
+    public GameState GameState = new();
+
+    public State() => CreateDecks();
+
+    void CreateDecks()
+    {
+        GameState.PlayerDeck = SUITS
+            .SelectMany(suit => RANKS.Select(rank => new Card(suit, rank, OWNERS[0])))
+            .ToList();
+        
+        GameState.OpponentDeck = SUITS
+            .SelectMany(suit => RANKS.Select(rank => new Card(suit, rank, OWNERS[1])))
+            .ToList();
+        
+        Shuffle(GameState.PlayerDeck);
+        Shuffle(GameState.OpponentDeck);
+        
+        GameState.PlayerReserve = GameState.PlayerDeck.Take(10).ToList();
+        GameState.PlayerDeck.RemoveRange(0, 10);
+        GameState.OpponentReserve = GameState.OpponentDeck.Take(10).ToList();
+        GameState.OpponentDeck.RemoveRange(0, 10);
+    }
+
+    public void MoveCard(MoveMessage move)
+    {
+        var src = GetList(move.Src, ref GameState)!;
+        var dst = GetList(move.Target, ref GameState)!;
+        
+        dst.Add(src.Last());
+        src.RemoveAt(src.Count - 1);
+    }
+
+    public Card? DrawReserveCard(int playerId) => playerId == 0 
+        ? GameState.PlayerReserve.LastOrDefault() 
+        : GameState.OpponentReserve.LastOrDefault();
+    
+    public Card? DrawCard(int playerId)
+    {
+        var isPlayer = playerId == 0;
+        var deck = isPlayer ? GameState.PlayerDeck : GameState.OpponentDeck;
+        var pile = isPlayer ? GameState.PlayerPile : GameState.OpponentPile;
+        
+        if (deck.Count == 0)
+        {
+            if (pile.Count == 0) return null;
+            
+            deck.AddRange(pile);
+            deck.Reverse();
+            pile.Clear();
+        }
+        
+        pile.Add(deck.Last());
+        deck.RemoveAt(deck.Count - 1);
+        
+        return pile.Last();
+    }
+    
+    public static List<Card>? GetList(string name, ref GameState gameState) => name switch
+    {
+        "player_deck" => gameState.PlayerDeck,
+        "player_pile" => gameState.PlayerPile,
+        "player_reserve" => gameState.PlayerReserve,
+
+        "opponent_deck" => gameState.OpponentDeck,
+        "opponent_pile" => gameState.OpponentPile,
+        "opponent_reserve" => gameState.OpponentReserve,
+
+        "pile_l_one" => gameState.PileLone,
+        "pile_l_two" => gameState.PileLtwo,
+        "pile_l_three" => gameState.PileLthree,
+        "pile_l_four" => gameState.PileLfour,
+
+        "pile_r_one" => gameState.PileRone,
+        "pile_r_two" => gameState.PileRtwo,
+        "pile_r_three" => gameState.PileRthree,
+        "pile_r_four" => gameState.PileRfour,
+
+        "stack_l_one" => gameState.StackLone,
+        "stack_l_two" => gameState.StackLtwo,
+        "stack_l_three" => gameState.StackLthree,
+        "stack_l_four" => gameState.StackLfour,
+
+        "stack_r_one" => gameState.StackRone,
+        "stack_r_two" => gameState.StackRtwo,
+        "stack_r_three" => gameState.StackRthree,
+        "stack_r_four" => gameState.StackRfour,
+        _ => null
+    };
+
+    public Snapshot GetSnapshot(int turnId)
+    {
+        ref var s = ref GameState;
+        
+        if (turnId == 0)
+            return new Snapshot(
+                PlayerReserve: s.PlayerReserve.Count > 0 ? [s.PlayerReserve.Last().Name] : [],
+                PlayerPile: s.PlayerPile.Count > 0 ? [s.PlayerPile.Last().Name] : [],
+                PlayerCardsLengths: [s.PlayerReserve.Count, s.PlayerPile.Count, s.PlayerDeck.Count],
+                
+                OpponentReserve: s.OpponentReserve.Count > 0 ? [s.OpponentReserve.Last().Name] : [],
+                OpponentPile: s.OpponentPile.Count > 0 ? [s.OpponentPile.Last().Name] : [],
+                OpponentCardsLengths: [s.OpponentReserve.Count, s.OpponentPile.Count, s.OpponentDeck.Count],
+                
+                PileLOne: s.PileLone.Select(c => c.Name).ToArray(),
+                PileLTwo: s.PileLtwo.Select(c => c.Name).ToArray(),
+                PileLThree: s.PileLthree.Select(c => c.Name).ToArray(),
+                PileLFour: s.PileLfour.Select(c => c.Name).ToArray(),
+
+                PileROne: s.PileRone.Select(c => c.Name).ToArray(),
+                PileRTwo: s.PileRtwo.Select(c => c.Name).ToArray(),
+                PileRThree: s.PileRthree.Select(c => c.Name).ToArray(),
+                PileRFour: s.PileRfour.Select(c => c.Name).ToArray(),
+
+                StackLOne: s.StackLone.Count > 0 ? [s.StackLone.Last().Name] : [],
+                StackLTwo: s.StackLtwo.Count > 0 ? [s.StackLtwo.Last().Name] : [],
+                StackLThree: s.StackLthree.Count > 0 ? [s.StackLthree.Last().Name] : [],
+                StackLFour: s.StackLfour.Count > 0 ? [s.StackLfour.Last().Name] : [],
+
+                StackROne: s.StackRone.Count > 0 ? [s.StackRone.Last().Name] : [],
+                StackRTwo: s.StackRtwo.Count > 0 ? [s.StackRtwo.Last().Name] : [],
+                StackRThree: s.StackRthree.Count > 0 ? [s.StackRthree.Last().Name] : [],
+                StackRFour: s.StackRfour.Count > 0 ? [s.StackRfour.Last().Name] : [],
+                
+                Turn: s.Turn
+            );
+        
+        return new Snapshot(
+            PlayerReserve: s.OpponentReserve.Count > 0 ? [s.OpponentReserve.Last().Name] : [],
+            PlayerPile: s.OpponentPile.Count > 0 ? [s.OpponentPile.Last().Name] : [],
+            PlayerCardsLengths:[s.OpponentReserve.Count, s.OpponentPile.Count, s.OpponentDeck.Count],
+                
+            OpponentReserve: s.PlayerReserve.Count > 0 ? [s.PlayerReserve.Last().Name] : [],
+            OpponentPile: s.PlayerPile.Count > 0 ? [s.PlayerPile.Last().Name] : [],
+            OpponentCardsLengths: [s.PlayerReserve.Count, s.PlayerPile.Count, s.PlayerDeck.Count],
+                
+            PileLOne: s.PileLone.Select(c => c.Name).ToArray(),
+            PileLTwo: s.PileLtwo.Select(c => c.Name).ToArray(),
+            PileLThree: s.PileLthree.Select(c => c.Name).ToArray(),
+            PileLFour: s.PileLfour.Select(c => c.Name).ToArray(),
+
+            PileROne: s.PileRone.Select(c => c.Name).ToArray(),
+            PileRTwo: s.PileRtwo.Select(c => c.Name).ToArray(),
+            PileRThree: s.PileRthree.Select(c => c.Name).ToArray(),
+            PileRFour: s.PileRfour.Select(c => c.Name).ToArray(),
+
+            StackLOne: s.StackLone.Count > 0 ? [s.StackLone.Last().Name] : [],
+            StackLTwo: s.StackLtwo.Count > 0 ? [s.StackLtwo.Last().Name] : [],
+            StackLThree: s.StackLthree.Count > 0 ? [s.StackLthree.Last().Name] : [],
+            StackLFour: s.StackLfour.Count > 0 ? [s.StackLfour.Last().Name] : [],
+
+            StackROne: s.StackRone.Count > 0 ? [s.StackRone.Last().Name] : [],
+            StackRTwo: s.StackRtwo.Count > 0 ? [s.StackRtwo.Last().Name] : [],
+            StackRThree: s.StackRthree.Count > 0 ? [s.StackRthree.Last().Name] : [],
+            StackRFour: s.StackRfour.Count > 0 ? [s.StackRfour.Last().Name] : [],
+                
+            Turn: s.Turn
+        );
+    }
+}
 
 public struct GameState()
 {
-    public List<string> PlayerDeck = [];
-    public List<string> PlayerPile = [];
-    public List<string> PlayerReserve = [];
+    public List<Card> PlayerDeck = [];
+    public List<Card> PlayerPile = [];
+    public List<Card> PlayerReserve = [];
     
-    public List<string> OpponentDeck = [];
-    public List<string> OpponentPile = [];
-    public List<string> OpponentReserve = [];
+    public List<Card> OpponentDeck = [];
+    public List<Card> OpponentPile = [];
+    public List<Card> OpponentReserve = [];
     
-    public List<string> PileLone = [];
-    public List<string> PileLtwo = [];
-    public List<string> PileLthree = [];
-    public List<string> PileLfour = [];
+    public List<Card> PileLone = [];
+    public List<Card> PileLtwo = [];
+    public List<Card> PileLthree = [];
+    public List<Card> PileLfour = [];
     
-    public List<string> PileRone = [];
-    public List<string> PileRtwo = [];
-    public List<string> PileRthree = [];
-    public List<string> PileRfour = [];
+    public List<Card> PileRone = [];
+    public List<Card> PileRtwo = [];
+    public List<Card> PileRthree = [];
+    public List<Card> PileRfour = [];
     
-    public List<string> StackLone = [];
-    public List<string> StackLtwo = [];
-    public List<string> StackLthree = [];
-    public List<string> StackLfour = [];
+    public List<Card> StackLone = [];
+    public List<Card> StackLtwo = [];
+    public List<Card> StackLthree = [];
+    public List<Card> StackLfour = [];
     
-    public List<string> StackRone = [];
-    public List<string> StackRtwo = [];
-    public List<string> StackRthree = [];
-    public List<string> StackRfour = [];
+    public List<Card> StackRone = [];
+    public List<Card> StackRtwo = [];
+    public List<Card> StackRthree = [];
+    public List<Card> StackRfour = [];
 
     public int Turn = 0;
-}
-
-public enum Rank
-{
-    Err = 0,
-    A = 1,
-    _2 = 2,
-    _3 = 3,
-    _4 = 4,
-    _5 = 5,
-    _6 = 6,
-    _7 = 7,
-    _8 = 8,
-    _9 = 9,
-    _10 = 10,
-    J = 11,
-    Q = 12,
-    K = 13
-}
-
-public enum SuitValues
-{
-    Err = 0,
-    H = 1,
-    D = 1,
-    C = 2,
-    S = 2
 }
 
 public record Snapshot(
@@ -72,15 +218,15 @@ public record Snapshot(
     [property: JsonPropertyName("opponent_pile")] string[] OpponentPile,
     [property: JsonPropertyName("opponent_cards_len")] int[] OpponentCardsLengths,
     
-    [property: JsonPropertyName("pile_l_one")] List<string> PileLOne,
-    [property: JsonPropertyName("pile_l_two")] List<string> PileLTwo,
-    [property: JsonPropertyName("pile_l_three")] List<string> PileLThree,
-    [property: JsonPropertyName("pile_l_four")] List<string> PileLFour,
+    [property: JsonPropertyName("pile_l_one")] string[] PileLOne,
+    [property: JsonPropertyName("pile_l_two")] string[] PileLTwo,
+    [property: JsonPropertyName("pile_l_three")] string[] PileLThree,
+    [property: JsonPropertyName("pile_l_four")] string[] PileLFour,
     
-    [property: JsonPropertyName("pile_r_one")] List<string> PileROne,
-    [property: JsonPropertyName("pile_r_two")] List<string> PileRTwo,
-    [property: JsonPropertyName("pile_r_three")] List<string> PileRThree,
-    [property: JsonPropertyName("pile_r_four")] List<string> PileRFour,
+    [property: JsonPropertyName("pile_r_one")] string[] PileROne,
+    [property: JsonPropertyName("pile_r_two")] string[] PileRTwo,
+    [property: JsonPropertyName("pile_r_three")] string[] PileRThree,
+    [property: JsonPropertyName("pile_r_four")] string[] PileRFour,
 
     [property: JsonPropertyName("stack_l_one")] string[] StackLOne,
     [property: JsonPropertyName("stack_l_two")] string[] StackLTwo,
@@ -94,131 +240,3 @@ public record Snapshot(
     
     [property: JsonPropertyName("turn")] int Turn
 );
-
-public class State
-{
-    readonly string[] _suits = ["H", "D", "C", "S"];
-    readonly string[] _ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
-    private readonly char[] _owners = ['0', '1'];
-    
-    public GameState GameState = new();
-
-    public State()
-    {
-        CreateDecks();
-    }
-
-    void CreateDecks()
-    {
-        GameState.PlayerDeck = _suits
-            .SelectMany(suit =>
-                _ranks.Select(rank => $"{suit}{rank}-{_owners[0]}"))
-            .ToList();
-        
-        GameState.OpponentDeck = _suits
-            .SelectMany(suit =>
-                _ranks.Select(rank => $"{suit}{rank}-{_owners[0]}"))
-            .ToList();
-        
-        Shuffle(GameState.PlayerDeck);
-        Shuffle(GameState.OpponentDeck);
-        
-        GameState.PlayerReserve = GameState.PlayerDeck.Take(10).ToList();
-        GameState.PlayerDeck.RemoveRange(0, 10);
-        GameState.OpponentReserve = GameState.OpponentDeck.Take(10).ToList();
-        GameState.OpponentDeck.RemoveRange(0, 10);
-    }
-
-    void DrawCard()
-    {
-        
-    }
-
-    public Snapshot GetSnapshot(int turnId)
-    {
-        ref var s = ref GameState;
-        
-        if (turnId == 0)
-            return new Snapshot(
-                PlayerReserve: s.PlayerReserve.Count > 0 ? [s.PlayerReserve.Last()] : [],
-                PlayerPile: s.PlayerPile.Count > 0 ? [s.PlayerPile.Last()] : [],
-                PlayerCardsLengths: [s.PlayerReserve.Count, s.PlayerPile.Count, s.PlayerDeck.Count],
-                
-                OpponentReserve: s.OpponentReserve.Count > 0 ? [s.OpponentReserve.Last()] : [],
-                OpponentPile: s.OpponentPile.Count > 0 ? [s.OpponentPile.Last()] : [],
-                OpponentCardsLengths: [s.OpponentReserve.Count, s.OpponentPile.Count, s.OpponentDeck.Count],
-                
-                PileLOne: s.PileLone,
-                PileLTwo: s.PileLtwo,
-                PileLThree: s.PileLthree,
-                PileLFour: s.PileLfour,
-
-                PileROne: s.PileRone,
-                PileRTwo: s.PileRtwo,
-                PileRThree: s.PileRthree,
-                PileRFour: s.PileRfour,
-
-                StackLOne: s.StackLone.Count > 0 ? [s.StackLone.Last()] : [],
-                StackLTwo: s.StackLtwo.Count > 0 ? [s.StackLtwo.Last()] : [],
-                StackLThree: s.StackLthree.Count > 0 ? [s.StackLthree.Last()] : [],
-                StackLFour: s.StackLfour.Count > 0 ? [s.StackLfour.Last()] : [],
-
-                StackROne: s.StackRone.Count > 0 ? [s.StackRone.Last()] : [],
-                StackRTwo: s.StackRtwo.Count > 0 ? [s.StackRtwo.Last()] : [],
-                StackRThree: s.StackRthree.Count > 0 ? [s.StackRthree.Last()] : [],
-                StackRFour: s.StackRfour.Count > 0 ? [s.StackRfour.Last()] : [],
-                
-                Turn: s.Turn
-            );
-        
-        return new Snapshot(
-            PlayerReserve: s.OpponentReserve.Count > 0 ? [s.OpponentReserve.Last()] : [],
-            PlayerPile: s.OpponentPile.Count > 0 ? [s.OpponentPile.Last()] : [],
-            PlayerCardsLengths:[s.OpponentReserve.Count, s.OpponentPile.Count, s.OpponentDeck.Count],
-                
-            OpponentReserve: s.PlayerReserve.Count > 0 ? [s.PlayerReserve.Last()] : [],
-            OpponentPile: s.PlayerPile.Count > 0 ? [s.PlayerPile.Last()] : [],
-            OpponentCardsLengths: [s.PlayerReserve.Count, s.PlayerPile.Count, s.PlayerDeck.Count],
-                
-            PileLOne: s.PileLone,
-            PileLTwo: s.PileLtwo,
-            PileLThree: s.PileLthree,
-            PileLFour: s.PileLfour,
-
-            PileROne: s.PileRone,
-            PileRTwo: s.PileRtwo,
-            PileRThree: s.PileRthree,
-            PileRFour: s.PileRfour,
-
-            StackLOne: s.StackLone.Count > 0 ? [s.StackLone.Last()] : [],
-            StackLTwo: s.StackLtwo.Count > 0 ? [s.StackLtwo.Last()] : [],
-            StackLThree: s.StackLthree.Count > 0 ? [s.StackLthree.Last()] : [],
-            StackLFour: s.StackLfour.Count > 0 ? [s.StackLfour.Last()] : [],
-
-            StackROne: s.StackRone.Count > 0 ? [s.StackRone.Last()] : [],
-            StackRTwo: s.StackRtwo.Count > 0 ? [s.StackRtwo.Last()] : [],
-            StackRThree: s.StackRthree.Count > 0 ? [s.StackRthree.Last()] : [],
-            StackRFour: s.StackRfour.Count > 0 ? [s.StackRfour.Last()] : [],
-                
-            Turn: s.Turn
-        );
-    }
-    
-    public static Rank GetRank(string rank) => rank switch
-    {
-        "A" => Rank.A,
-        "2" => Rank._2,
-        "3" => Rank._3,
-        "4" => Rank._4,
-        "5" => Rank._5,
-        "6" => Rank._6,
-        "7" => Rank._7,
-        "8" => Rank._8,
-        "9" => Rank._9,
-        "10" => Rank._10,
-        "J" => Rank.J,
-        "Q" => Rank.Q,
-        "K" => Rank.K,
-        _ => Rank.Err
-    };
-}

@@ -27,7 +27,9 @@ function create_state() {
         stack_r_two: [],
         stack_r_three: [],
         stack_r_four: [],
+        player: 0,
         turn: 0,
+        state: 0,
         is_mp: false
     }
 }
@@ -62,6 +64,25 @@ function state_move_card(src, target) {
     const card_value = Array.isArray(state[src]) ? state[src].at(-1).split("-")[0] : state[src].split("-")[0];
     state[target].push(card_value);
     if (Array.isArray(state[src])) state[src].pop();
+
+    if (!state.is_mp) return;
+
+    if (src.startsWith("player")) {
+        if (src === "player_pile") state.player_cards_len[1]--;
+        if (src === "player_reserve") state.player_cards_len[0]--;
+    }
+    else if (src.startsWith("opponent")) {
+        if (src === "opponent_pile") state.opponent_cards_len[1]--;
+        if (src === "opponent_reserve") state.opponent_cards_len[0]--;
+    }
+    if (target.startsWith("player")) {
+        if (src === "player_reserve") state.player_cards_len[0]++;
+        if (src === "player_pile") state.player_cards_len[1]++;
+    } else if (target.startsWith("opponent")) {
+        if (src === "opponent_reserve") state.opponent_cards_len[0]++;
+        if (src === "opponent_pile") state.opponent_cards_len[1]++;
+    }
+
 }
 
 function state_apply_snapshot(snap) {

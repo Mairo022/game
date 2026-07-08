@@ -25,7 +25,7 @@ app.Map("/ws", async context =>
     connections.Add(connection.Id, connection);
 
     Room? room = null;
-    var buffer = new byte[32];
+    var buffer = new byte[128];
     
     while (socket.State == WebSocketState.Open)
     {
@@ -47,17 +47,16 @@ app.Map("/ws", async context =>
         var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
         Console.WriteLine($@"Received {msg}");
 
-        if (msg.StartsWith("create_room"))
+        if (msg.Equals("create_room"))
         { 
             connection.DisconnectFromRoom();
             if (room?.Count == 0) rooms.Remove(room.Id);
 
-            room = new Room(connection, rooms);
+            room = new Room(rooms);
             rooms.Add(room.Id, room);
+            
+            await room.Connect(connection);
             connection.Room = room;
-
-            await SocketSendAsync(socket, $@"joined_room:{room.Id}");
-            await room.SendSnapshot();
         }
         else if (msg.StartsWith("join_room"))
         {
@@ -66,15 +65,11 @@ app.Map("/ws", async context =>
 
             if (!rooms.TryGetValue(roomCode, out room))
             {
-                Console.WriteLine($"Room {roomCode} not found");
-                await SocketSendAsync(socket, $@"not_found:{roomCode}");
+                await SocketSendAsync(socket, (new OutgoingMessage<string>("joinRoomFailed", "Not Found")).Json());
                 continue;
             }
                 
-            room.Connect(connection);
-            connection.Room = room;
-            await SocketSendAsync(socket, $@"joined_room:{roomCode}");
-            await room.SendSnapshot();
+            if (await room.Connect(connection)) connection.Room = room;
         }
         else
         {
