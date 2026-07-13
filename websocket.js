@@ -81,12 +81,23 @@ function ws_on_message(event) {
     }
 
     if (msg.Type === "draw_reserve") {
-        state.player_reserve.push(msg.Data);
+        state.player_reserve.push(msg.Data); // should set first item
         render_player_cards(state);
     }
 
     if (msg.Type === "draw_reserve_op") {
         state.opponent_reserve.push(msg.Data);
+        render_opponent_cards(state);
+        return;
+    }
+
+    if (msg.Type === "draw_pile") {
+        state.player_pile.push(msg.Data);
+        render_player_cards(state);
+    }
+
+    if (msg.Type === "draw_pile_op") {
+        state.opponent_pile.push(msg.Data);
         render_opponent_cards(state);
         return;
     }
@@ -104,7 +115,7 @@ function ws_on_message(event) {
 function ws_on_close() {
     ws_behaviour_set_player_connection(0);
     console.log("WS closed");
-    setTimeout(ws_connect, 1000);
+    setTimeout(ws_connect, 2000);
 }
 
 function ws_on_error(err) {
@@ -149,4 +160,5 @@ export {
     ws_join_room,
     ws_draw_card,
     ws_send_move
+    ws_send_move,
 }

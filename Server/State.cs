@@ -72,6 +72,9 @@ public class State
         
         return pile.Last();
     }
+
+    public Card? GetPlayerPileCard(int playerId) => 
+        playerId == 0 ? GameState.PlayerPile.LastOrDefault() : GameState.OpponentPile.LastOrDefault();
     
     public static List<Card>? GetList(string name, ref GameState gameState) => name switch
     {

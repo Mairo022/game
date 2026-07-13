@@ -20,56 +20,66 @@ app.Map("/ws", async context =>
     }
 
     var socket = await context.WebSockets.AcceptWebSocketAsync();
-    
     var connection = new Connection(socket);
-    connections.Add(connection.Id, connection);
-
     Room? room = null;
     var buffer = new byte[128];
+    
+    connections.Add(connection.Id, connection);
     
     while (socket.State == WebSocketState.Open)
     {
         var result = await socket.ReceiveAsync(buffer, CancellationToken.None);
         
-        if (!result.EndOfMessage) await socket.CloseAsync(
-            WebSocketCloseStatus.MessageTooBig,
-            "Msg too large",
-            CancellationToken.None);
+        if (!result.EndOfMessage)
+        {
+            await socket.CloseAsync(
+                WebSocketCloseStatus.MessageTooBig,
+                "Msg too large",
+                CancellationToken.None);
+            return;
+        }
         
         if (result.MessageType == WebSocketMessageType.Close)
         {
             connection.DisconnectFromRoom();
             connections.Remove(connection.Id);
             if (room?.Count == 0) rooms.Remove(room.Id);
-            break;
+            return;
         }
         
         var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
         Console.WriteLine($@"Received {msg}");
 
         if (msg.Equals("create_room"))
-        { 
+        {
+            // Auto connect to available room, for testing
+            room = rooms.Values.FirstOrDefault();
+            if (room is not null)
+            {
+                if (await room.Connect(connection))
+                {
+                    connection.Room = room;
+                    continue;
+                }
+            }
             connection.DisconnectFromRoom();
             if (room?.Count == 0) rooms.Remove(room.Id);
 
             room = new Room(rooms);
-            rooms.Add(room.Id, room);
-            
             await room.Connect(connection);
             connection.Room = room;
         }
-        else if (msg.StartsWith("join_room"))
+        else if (msg.StartsWith("join_room:"))
         {
-            var split = msg.Split(':');
-            var roomCode = split[1];
+            var roomCode = msg.Split(':')[1][..4];
 
             if (!rooms.TryGetValue(roomCode, out room))
             {
-                await SocketSendAsync(socket, (new OutgoingMessage<string>("joinRoomFailed", "Not Found")).Json());
+                await SocketSendAsync(socket, CreateOutMsg("join_room_failed", "Not Found"));
                 continue;
             }
-                
-            if (await room.Connect(connection)) connection.Room = room;
+
+            connection.Room = await room.Connect(connection) ? room : null;
         }
         else
         {

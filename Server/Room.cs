@@ -15,6 +15,8 @@ public class Room
     {
         do Id = new Random().Next(0, 10000).ToString("D4");
         while (rooms.ContainsKey(Id));
+        
+        rooms.Add(Id, this);
     }
 
     async Task SendSnapshots()
@@ -35,8 +37,6 @@ public class Room
     {
         try
         {
-            Console.WriteLine(json);
-            
             if (!TryParseJson(json, out var root, out var type))
             {
                 await SocketSendAsync(conn.Socket, "Unknown message");
@@ -55,23 +55,12 @@ public class Room
                     }
 
                     if (move is null) break;
-
-                    // Swap player pov to server pov
-                    if (conn.TurnId == 1)
-                    {
-                        if (move.Src.StartsWith("player")) move.Src = move.Src.Replace("player", "opponent");
-                        else if (move.Src.StartsWith("opponent")) move.Src = move.Src.Replace("opponent", "player");
-                        
-                        if (move.Target.StartsWith("player")) move.Target = move.Target.Replace("player", "opponent");
-                        else if (move.Target.StartsWith("opponent")) move.Target = move.Target.Replace("opponent", "player");
-                    }
+                    if (conn.TurnId == 1) ChangeMovePov(ref move);
                     Console.WriteLine(move);
                     
-                    var isValid = Validation.IsValidMove(move, ref _state.GameState);
-                    Console.WriteLine(isValid ? "Valid move" : "Invalid move");
-                    
-                    if (!isValid)
+                    if (!Validation.IsValidMove(move, ref _state.GameState))
                     {
+                        Console.WriteLine("Invalid move");
                         await SocketSendAsync(conn.Socket, CreateOutMsg("move_failed", "Invalid move"));
                         break;
                     }
@@ -91,8 +80,18 @@ public class Room
                         await SocketSendAsync(otherConn?.Socket, CreateOutMsg("draw_reserve_op", card.Value.Name));
                         await SocketSendAsync(conn.Socket, CreateOutMsg("draw_reserve", card.Value.Name));
                     }
+                    
+                    if (move.Src.EndsWith("pile"))
+                    {
+                        var card = _state.GetPlayerPileCard(conn.TurnId);
+                        if (card is null) break;
+                        
+                        await SocketSendAsync(otherConn?.Socket, CreateOutMsg("draw_pile_op", card.Value.Name));
+                        await SocketSendAsync(conn.Socket, CreateOutMsg("draw_pile", card.Value.Name));
+                    }
                     break;
                 }
+                
                 case "draw_card":
                 {
                     var otherConn = GetOtherConnection(conn);
@@ -114,9 +113,15 @@ public class Room
                     await SocketSendAsync(otherConn?.Socket, CreateOutMsg("draw_card_op", card.Value.Name));
                     break;
                 }
+                
                 case "get_snap":
                 {
                     await SendSnapshot(conn);
+                    break;
+                }
+
+                case "end_turn":
+                {
                     break;
                 }
             }
@@ -125,6 +130,15 @@ public class Room
         {
             Console.WriteLine("\nRoom HandleMessage failed: " + e);
         }
+    }
+
+    void ChangeMovePov(ref MoveMessage move)
+    {
+        if (move.Src.StartsWith("player")) move.Src = move.Src.Replace("player", "opponent");
+        else if (move.Src.StartsWith("opponent")) move.Src = move.Src.Replace("opponent", "player");
+                        
+        if (move.Target.StartsWith("player")) move.Target = move.Target.Replace("player", "opponent");
+        else if (move.Target.StartsWith("opponent")) move.Target = move.Target.Replace("opponent", "player");
     }
 
     Connection? GetOtherConnection(Connection conn)

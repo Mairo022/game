@@ -5,7 +5,7 @@ namespace Server;
 public class Connection(WebSocket socket)
 {
     public readonly string Id = Guid.NewGuid().ToString();
-    public WebSocket Socket = socket;
+    public readonly WebSocket Socket = socket;
     public int TurnId;
     public Room? Room;
 
