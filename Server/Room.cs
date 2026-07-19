@@ -122,11 +122,14 @@ public class Room
                         await SocketSendAsync(conn.Socket, CreateOutMsg("draw_card_failed", "Deck empty"));
                         break;
                     }
+
+                    var nextDeckCardOwner = _state.GetDeckCardOwner(conn.TurnId);
                     var otherConn = GetOtherConnection(conn);
                     
                     _state.SetCardDrawn(true);
-                    await SocketSendAsync(conn.Socket, CreateOutMsg("draw_card", card.Value.Name));
-                    await SocketSendAsync(otherConn?.Socket, CreateOutMsg("draw_card_op", card.Value.Name));
+
+                    await SocketSendAsync(conn.Socket, CreateOutMsg("draw_card", $@"{card.Value.Name},{nextDeckCardOwner}"));
+                    await SocketSendAsync(otherConn?.Socket, CreateOutMsg("draw_card_op", $@"{card.Value.Name},{nextDeckCardOwner}"));
                     break;
                 }
 

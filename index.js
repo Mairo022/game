@@ -4,7 +4,7 @@ import {is_player_turn, is_valid_move, is_valid_turn_end} from "./validation.js"
 import {
     reset_state,
     state, state_allow_draw_card, state_end_turn, state_init_decks,
-    state_move_card,
+    state_move_card, state_move_card_mp,
 } from "./state.js";
 import {
     btn_create_room, btn_end_turn, btn_get_snap, btn_join_room, btn_start_sp,
@@ -96,10 +96,12 @@ function handle_card_drop(src, target, target_type) {
     if (!is_valid_move(target, card, state, target_type)) return false;
     if (src === "player_pile") state_allow_draw_card();
 
-    state_move_card(src, target);
-    render_all(state);
+    if (state.is_mp) {
+        state_move_card_mp(src, target);
+        ws_send_move(create_move_obj(src, target))
+    } else state_move_card(src, target);
 
-    if (state.is_mp) ws_send_move(create_move_obj(src, target))
+    render_all(state);
 
     return true;
 }

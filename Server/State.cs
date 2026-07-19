@@ -96,6 +96,18 @@ public class State
         return pile.Last();
     }
 
+    public int GetDeckCardOwner(int playerId)
+    {
+        var deck = playerId switch
+        {
+            0 => GameState.PlayerDeck,
+            1 => GameState.OpponentDeck,
+            _ => null
+        };
+
+        return deck is { Count: > 0 } ? deck[^1].Owner : -1;
+    }
+
     public Card? GetPlayerPileCard(int playerId)
     {
         if (playerId == 0) return GameState.PlayerPile.Count > 0 ?  GameState.PlayerPile.Last() : null;

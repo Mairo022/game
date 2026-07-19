@@ -75,16 +75,25 @@ function state_disable_card_draw() {
     state.is_card_drawn = true;
 }
 
+function state_init_deck_owners() {
+    state.player_deck[0] = `x-${state.player_id}`
+    state.opponent_deck[0] = `x-${!state.player_id * 1}`
+}
+
 function state_move_card(src, target) {
     const card_value = state[src].at(-1).split("-")[0];
 
-    if (state.is_mp) state[target][0] = card_value;
-    else state[target].push(card_value);
+    state[target].push(card_value);
+    state[src].pop();
+}
+
+function state_move_card_mp(src, target) {
+    const card_value = state[src].at(-1).split("-")[0];
+
+    if (target.startsWith("pile")) state[target].push(card_value);
+    else state[target][0] = card_value;
 
     state[src].pop();
-
-    if (!state.is_mp) return;
-    console.log(src, target);
 
     if (src.startsWith("player")) {
         if (src === "player_pile") state.player_cards_len[1]--;
@@ -138,5 +147,7 @@ export {
     state_init_decks,
     state_set_player_id,
     state_allow_draw_card,
-    state_disable_card_draw
+    state_disable_card_draw,
+    state_move_card_mp,
+    state_init_deck_owners
 }

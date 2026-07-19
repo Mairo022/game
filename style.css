@@ -320,6 +320,7 @@ main {
 
 }
 
+[data-value="-1"] { background:  transparent; }
 [data-value="D2"] { background-image: url("./img/D2.webp"); }
 [data-value="D3"] { background-image: url("./img/D3.webp"); }
 [data-value="D4"] { background-image: url("./img/D4.webp"); }

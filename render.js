@@ -17,7 +17,7 @@ function render_player_cards(state) {
         el_reserve.dataset.value = value;
         el_reserve.textContent = value;
     } else {
-        el_reserve.dataset.value = "";
+        el_reserve.dataset.value = "-1";
         el_reserve.textContent = "";
     }
 

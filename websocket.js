@@ -1,5 +1,12 @@
 import {handle_game_start, ws_behaviour_set_player_connection, ws_behaviour_set_room} from "./index.js";
-import {state, state_apply_snapshot, state_end_turn, state_move_card, state_set_player_id} from "./state.js";
+import {
+    state,
+    state_apply_snapshot,
+    state_end_turn,
+    state_init_deck_owners,
+    state_move_card_mp,
+    state_set_player_id
+} from "./state.js";
 import {render_all, render_opponent_cards, render_player_cards} from "./render.js";
 
 let ws;
@@ -29,31 +36,30 @@ function ws_on_message(event) {
     const msg = JSON.parse(event.data);
     console.log(`Received:\nType = ${msg.Type}; Data = ${JSON.stringify(msg.Data)}`);
 
-    if (msg.Type === "joined_room") {
-        ws_behaviour_set_room(msg.Data.Id);
-        state_set_player_id(msg.Data.PlayerId);
-        return;
-    }
+    if (msg.Type === "move") {
+        msg.Data.Src = msg.Data.Src.replace("player", "opponent");
+        msg.Data.Target = msg.Data.Target.replace("opponent", "player");
 
-    if (msg.Type === "join_room_failed") {
-        console.error("Failed to join room:", event.Data);
-    }
-
-    if (msg.Type === "start") {
-        handle_game_start(true);
-        state_apply_snapshot(msg.Data);
+        state_move_card_mp(msg.Data.Src, msg.Data.Target);
         render_all(state);
         return;
     }
 
-    if (msg.Type === "snap") {
-        state_apply_snapshot(msg.Data);
-        render_all(state);
+    if (msg.Type === "draw_pile") {
+        state.player_pile[0] = msg.Data;
+        render_player_cards(state);
+    }
+
+    if (msg.Type === "draw_pile_op") {
+        state.opponent_pile[0] = msg.Data;
+        render_opponent_cards(state);
         return;
     }
 
     if (msg.Type === "draw_card") {
-        state.player_pile[0] = msg.Data;
+        const split = msg.Data.split(",");
+        state.player_pile[0] = split[0];
+        state.player_deck[0] = "x-"+split[1];
 
         if (state.player_cards_len[2] === 0) {
             state.player_cards_len[2] = state.player_cards_len[1]-1;
@@ -67,7 +73,9 @@ function ws_on_message(event) {
     }
 
     if (msg.Type === "draw_card_op") {
-        state.opponent_pile[0] = msg.Data;
+        const split = msg.Data.split(",");
+        state.opponent_pile[0] = split[0];
+        state.opponent_deck[0] = "x-"+split[1];
 
         if (state.opponent_cards_len[2] === 0) {
             state.opponent_cards_len[2] = state.opponent_cards_len[1]-1;
@@ -92,28 +100,32 @@ function ws_on_message(event) {
         return;
     }
 
-    if (msg.Type === "draw_pile") {
-        state.player_pile[0] = msg.Data;
-        render_player_cards(state);
-    }
-
-    if (msg.Type === "draw_pile_op") {
-        state.opponent_pile[0] = msg.Data;
-        render_opponent_cards(state);
+    if (msg.Type === "end_turn_op") {
+        state_end_turn(!state.player_id)
         return;
     }
 
-    if (msg.Type === "move") {
-        msg.Data.Src = msg.Data.Src.replace("player", "opponent");
-        msg.Data.Target = msg.Data.Target.replace("opponent", "player");
-
-        state_move_card(msg.Data.Src, msg.Data.Target);
+    if (msg.Type === "snap") {
+        state_apply_snapshot(msg.Data);
         render_all(state);
         return;
     }
 
-    if (msg.Type === "end_turn_op") {
-        state_end_turn(!state.player_id)
+    if (msg.Type === "joined_room") {
+        ws_behaviour_set_room(msg.Data.Id);
+        state_set_player_id(msg.Data.PlayerId);
+        return;
+    }
+
+    if (msg.Type === "join_room_failed") {
+        console.error("Failed to join room:", event.Data);
+    }
+
+    if (msg.Type === "start") {
+        handle_game_start(true);
+        state_apply_snapshot(msg.Data);
+        state_init_deck_owners()
+        render_all(state);
         return;
     }
 }
