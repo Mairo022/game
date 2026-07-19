@@ -26,7 +26,7 @@ function create_move_obj(src, target) {
         Type: "move",
         Src: src,
         Target: target,
-        Player: state.player, // No need, but nice for debugging
+        Player: state.player_id,
         State: state.state
     }
 }

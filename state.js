@@ -1,3 +1,5 @@
+import {create_deck, shuffle} from "./utils.js";
+
 const state = create_state();
 
 // SP uses lists, MP uses first value in list
@@ -27,15 +29,20 @@ function create_state() {
         stack_r_two: [],
         stack_r_three: [],
         stack_r_four: [],
-        player: 0,
-        turn: 0,
         state: 0,
+        player_id: 0,
+        turn_player_id: 0,
+        is_card_drawn: false,
         is_mp: false
     }
 }
 
 function reset_state() {
     Object.assign(state, create_state());
+}
+
+function state_end_turn(player_id) {
+    state.turn_player_id = !player_id * 1;
 }
 
 function state_draw_card() {
@@ -60,12 +67,24 @@ function state_pile_to_deck() {
     state.player_pile.length = 0;
 }
 
+function state_allow_draw_card() {
+    state.is_card_drawn = false;
+}
+
+function state_disable_card_draw() {
+    state.is_card_drawn = true;
+}
+
 function state_move_card(src, target) {
-    const card_value = Array.isArray(state[src]) ? state[src].at(-1).split("-")[0] : state[src].split("-")[0];
-    state[target].push(card_value);
-    if (Array.isArray(state[src])) state[src].pop();
+    const card_value = state[src].at(-1).split("-")[0];
+
+    if (state.is_mp) state[target][0] = card_value;
+    else state[target].push(card_value);
+
+    state[src].pop();
 
     if (!state.is_mp) return;
+    console.log(src, target);
 
     if (src.startsWith("player")) {
         if (src === "player_pile") state.player_cards_len[1]--;
@@ -75,18 +94,34 @@ function state_move_card(src, target) {
         if (src === "opponent_pile") state.opponent_cards_len[1]--;
         if (src === "opponent_reserve") state.opponent_cards_len[0]--;
     }
-    if (target.startsWith("player")) {
-        if (src === "player_reserve") state.player_cards_len[0]++;
-        if (src === "player_pile") state.player_cards_len[1]++;
-    } else if (target.startsWith("opponent")) {
-        if (src === "opponent_reserve") state.opponent_cards_len[0]++;
-        if (src === "opponent_pile") state.opponent_cards_len[1]++;
-    }
 
+    if (target.startsWith("player")) {
+        if (target === "player_reserve") state.player_cards_len[0]++;
+        if (target === "player_pile") state.player_cards_len[1]++;
+    } else if (target.startsWith("opponent")) {
+        if (target === "opponent_reserve") state.opponent_cards_len[0]++;
+        if (target === "opponent_pile") state.opponent_cards_len[1]++;
+    }
 }
 
 function state_apply_snapshot(snap) {
     Object.assign(state, snap);
+}
+
+function state_set_player_id(player_id) {
+    state.player_id = player_id;
+}
+
+function state_init_decks() {
+    const deck = create_deck();
+    shuffle(deck);
+    state.player_reserve = deck.slice(0, 10);
+    state.player_deck = deck.slice(10);
+
+    const deck2 = create_deck();
+    shuffle(deck2);
+    state.opponent_reserve = deck2.slice(0, 10);
+    state.opponent_deck = deck2.slice(10);
 }
 
 export {
@@ -99,4 +134,9 @@ export {
     state_pile_to_deck,
     state_move_card,
     state_apply_snapshot,
+    state_end_turn,
+    state_init_decks,
+    state_set_player_id,
+    state_allow_draw_card,
+    state_disable_card_draw
 }

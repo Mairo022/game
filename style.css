@@ -60,6 +60,7 @@ main {
     flex-direction: column;
     place-items: center;
     gap: 8px;
+    z-index: 9;
 }
 
 #player_ws_status {

@@ -1,14 +1,21 @@
-import {state, state_draw_card, state_is_deck_empty, state_is_player_pile_empty, state_pile_to_deck} from "./state.js";
+import {
+    state,
+    state_disable_card_draw, state_draw_card, state_is_deck_empty, state_is_player_pile_empty, state_pile_to_deck
+} from "./state.js";
 import {create_ghost_card_manual_move, ghost} from "./elements.js";
 import {TARGETS} from "./constants.js";
 import {handle_card_drop} from "./index.js";
 import {render_player_cards} from "./render.js";
 import {ws_draw_card} from "./websocket.js";
+import {is_player_turn} from "./validation.js";
 
 function on_deck_click() {
+    if (!is_player_turn(state)) return;
+
     if (state.is_mp)
     {
         ws_draw_card();
+        state_disable_card_draw();
         render_player_cards(state)
         return;
     }
@@ -19,11 +26,14 @@ function on_deck_click() {
         state_pile_to_deck()
     }
 
+    state_disable_card_draw();
     state_draw_card()
     render_player_cards(state)
 }
 
 function on_pile_pointer_down(e) {
+    if (!is_player_turn(state)) return;
+
     const card = e.target
     const value = card.dataset.value;
     const pile_id = card.parentElement.id;
@@ -48,6 +58,8 @@ function on_card_pointer_move(e) {
 }
 
 function on_card_pointer_down(e) {
+    if (!is_player_turn(state)) return;
+
     const card = e.currentTarget;
     const rect = card.getBoundingClientRect();
 

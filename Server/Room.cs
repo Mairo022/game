@@ -44,6 +44,19 @@ public class Room
                 return;
             }
 
+            if (type == "get_snap")
+            {
+                await SendSnapshot(conn);
+                return;
+            }
+
+            if (!Validation.IsPlayerTurn(conn, ref _state.GameState))
+            {
+                Console.WriteLine("Not player turn");
+                await SocketSendAsync(conn.Socket, CreateOutMsg("wrong_turn", ""));
+                return;
+            }
+
             switch (type)
             {
                 case "move":
@@ -72,7 +85,7 @@ public class Room
                     
                     await SocketSendAsync(otherConn?.Socket, CreateOutMsg("move", moveOut));
 
-                    if (move.Src.EndsWith("reserve"))
+                    if (move.Src.EndsWith("reserve")) // is player reserve
                     {
                         var card = _state.DrawReserveCard(conn.TurnId);
                         if (card is null) break;
@@ -81,47 +94,52 @@ public class Room
                         await SocketSendAsync(conn.Socket, CreateOutMsg("draw_reserve", card.Value.Name));
                     }
                     
-                    if (move.Src.EndsWith("pile"))
+                    if (move.Src.EndsWith("pile")) // is player pile
                     {
+                        _state.SetCardDrawn(false);
+                        
                         var card = _state.GetPlayerPileCard(conn.TurnId);
                         if (card is null) break;
                         
                         await SocketSendAsync(otherConn?.Socket, CreateOutMsg("draw_pile_op", card.Value.Name));
                         await SocketSendAsync(conn.Socket, CreateOutMsg("draw_pile", card.Value.Name));
                     }
+                    
                     break;
                 }
                 
                 case "draw_card":
                 {
-                    var otherConn = GetOtherConnection(conn);
+                    if (Validation.IsValidDrawCard(ref _state.GameState))
+                    {
+                        await SocketSendAsync(conn.Socket, CreateOutMsg("draw_card_failed", "Already drew"));
+                        break;                        
+                    }
                     
-                    // if (conn.TurnId != _state.GameState.Turn)
-                    // {
-                    //     await SocketSendAsync(conn.Socket, CreateOutMsg("draw_card_failed", "Wrong turn"));
-                    //     break;
-                    // }
-
                     var card = _state.DrawCard(conn.TurnId);
                     if (card is null)
                     {
                         await SocketSendAsync(conn.Socket, CreateOutMsg("draw_card_failed", "Deck empty"));
                         break;
                     }
+                    var otherConn = GetOtherConnection(conn);
                     
+                    _state.SetCardDrawn(true);
                     await SocketSendAsync(conn.Socket, CreateOutMsg("draw_card", card.Value.Name));
                     await SocketSendAsync(otherConn?.Socket, CreateOutMsg("draw_card_op", card.Value.Name));
-                    break;
-                }
-                
-                case "get_snap":
-                {
-                    await SendSnapshot(conn);
                     break;
                 }
 
                 case "end_turn":
                 {
+                    if (!Validation.IsValidTurnEnd(conn, ref _state.GameState))
+                    {
+                        await SocketSendAsync(conn.Socket, CreateOutMsg("end_turn_failed", "Must draw card"));
+                        break;
+                    }
+                    _state.ChangeTurn();
+                    var otherConn = GetOtherConnection(conn);
+                    await SocketSendAsync(otherConn?.Socket, CreateOutMsg("end_turn_op", ""));
                     break;
                 }
             }
@@ -163,8 +181,9 @@ public class Room
             await SocketSendAsync(connection.Socket, CreateOutMsg("join_room_failed", "Full"));
             return false;
         }
-        
-        await SocketSendAsync(connection.Socket, CreateOutMsg("joined_room", Id));
+
+        var joinedRoom = new JoinedRoom{ Id = Id, PlayerId = connection.TurnId };
+        await SocketSendAsync(connection.Socket, CreateOutMsg("joined_room", joinedRoom));
         
         // Later to Start event
         var snap = _state.GetSnapshot(connection.TurnId);
@@ -184,4 +203,10 @@ public class Room
     public int Count =>
         (_connectionFirst is not null ? 1 : 0) +
         (_connectionSecond is not null ? 1 : 0);
+}
+
+public record JoinedRoom
+{
+    public required string Id { get; init; }
+    public required int PlayerId { get; init; }
 }

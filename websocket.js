@@ -1,5 +1,5 @@
 import {handle_game_start, ws_behaviour_set_player_connection, ws_behaviour_set_room} from "./index.js";
-import {state, state_apply_snapshot, state_move_card} from "./state.js";
+import {state, state_apply_snapshot, state_end_turn, state_move_card, state_set_player_id} from "./state.js";
 import {render_all, render_opponent_cards, render_player_cards} from "./render.js";
 
 let ws;
@@ -30,7 +30,8 @@ function ws_on_message(event) {
     console.log(`Received:\nType = ${msg.Type}; Data = ${JSON.stringify(msg.Data)}`);
 
     if (msg.Type === "joined_room") {
-        ws_behaviour_set_room(msg.Data);
+        ws_behaviour_set_room(msg.Data.Id);
+        state_set_player_id(msg.Data.PlayerId);
         return;
     }
 
@@ -52,7 +53,7 @@ function ws_on_message(event) {
     }
 
     if (msg.Type === "draw_card") {
-        state.player_pile.push(msg.Data);
+        state.player_pile[0] = msg.Data;
 
         if (state.player_cards_len[2] === 0) {
             state.player_cards_len[2] = state.player_cards_len[1]-1;
@@ -66,7 +67,7 @@ function ws_on_message(event) {
     }
 
     if (msg.Type === "draw_card_op") {
-        state.opponent_pile.push(msg.Data);
+        state.opponent_pile[0] = msg.Data;
 
         if (state.opponent_cards_len[2] === 0) {
             state.opponent_cards_len[2] = state.opponent_cards_len[1]-1;
@@ -81,23 +82,23 @@ function ws_on_message(event) {
     }
 
     if (msg.Type === "draw_reserve") {
-        state.player_reserve.push(msg.Data); // should set first item
+        state.player_reserve[0] = msg.Data;
         render_player_cards(state);
     }
 
     if (msg.Type === "draw_reserve_op") {
-        state.opponent_reserve.push(msg.Data);
+        state.opponent_reserve[0] = msg.Data;
         render_opponent_cards(state);
         return;
     }
 
     if (msg.Type === "draw_pile") {
-        state.player_pile.push(msg.Data);
+        state.player_pile[0] = msg.Data;
         render_player_cards(state);
     }
 
     if (msg.Type === "draw_pile_op") {
-        state.opponent_pile.push(msg.Data);
+        state.opponent_pile[0] = msg.Data;
         render_opponent_cards(state);
         return;
     }
@@ -105,9 +106,14 @@ function ws_on_message(event) {
     if (msg.Type === "move") {
         msg.Data.Src = msg.Data.Src.replace("player", "opponent");
         msg.Data.Target = msg.Data.Target.replace("opponent", "player");
-        console.log(msg.Data);
+
         state_move_card(msg.Data.Src, msg.Data.Target);
         render_all(state);
+        return;
+    }
+
+    if (msg.Type === "end_turn_op") {
+        state_end_turn(!state.player_id)
         return;
     }
 }
@@ -152,6 +158,14 @@ function ws_send_move(moveObj) {
     ws_send(JSON.stringify(moveObj));
 }
 
+function ws_get_snap() {
+    ws_send(`{"Type": "get_snap"}`);
+}
+
+function ws_end_turn() {
+    ws_send(`{"Type": "end_turn"}`);
+}
+
 export {
     ws,
     ws_send,
@@ -159,6 +173,7 @@ export {
     ws_create_room,
     ws_join_room,
     ws_draw_card,
-    ws_send_move
     ws_send_move,
+    ws_get_snap,
+    ws_end_turn
 }

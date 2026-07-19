@@ -30,13 +30,33 @@ public class State
             .SelectMany(suit => RANKS.Select(rank => new Card(suit, rank, OWNERS[1])))
             .ToList();
         
-        Shuffle(GameState.PlayerDeck);
-        Shuffle(GameState.OpponentDeck);
+        var pd = GameState.PlayerDeck;
+        var od = GameState.OpponentDeck;
         
-        GameState.PlayerReserve = GameState.PlayerDeck.Take(10).ToList();
-        GameState.PlayerDeck.RemoveRange(0, 10);
-        GameState.OpponentReserve = GameState.OpponentDeck.Take(10).ToList();
-        GameState.OpponentDeck.RemoveRange(0, 10);
+        Shuffle(pd);
+        Shuffle(od);
+        
+        GameState.PlayerReserve = pd.TakeLast(10).ToList();
+        pd.RemoveRange(pd.Count - 10, 10);
+        GameState.OpponentReserve = od.TakeLast(10).ToList();
+        od.RemoveRange(od.Count - 10, 10);
+
+        var i = pd.Count;
+
+        GameState.PileLone.Add(od.ElementAt(--i));
+        GameState.PileRone.Add(pd.ElementAt(i));
+        GameState.PileLtwo.Add(od.ElementAt(--i));
+        GameState.PileRtwo.Add(pd.ElementAt(i));
+        GameState.PileLthree.Add(od.ElementAt(--i));
+        GameState.PileRthree.Add(pd.ElementAt(i));
+        GameState.PileLfour.Add(od.ElementAt(--i));
+        GameState.PileRfour.Add(pd.ElementAt(i));
+        
+        GameState.PlayerPile.Add(pd.ElementAt(--i));
+        GameState.OpponentPile.Add(od.ElementAt(--i));
+        
+        pd.RemoveRange(i, 5);
+        od.RemoveRange(i, 5);
     }
 
     public void MoveCard(MoveMessage move)
@@ -48,9 +68,12 @@ public class State
         src.RemoveAt(src.Count - 1);
     }
 
-    public Card? DrawReserveCard(int playerId) => playerId == 0 
-        ? GameState.PlayerReserve.LastOrDefault() 
-        : GameState.OpponentReserve.LastOrDefault();
+    public Card? DrawReserveCard(int playerId)
+    {
+        if (playerId == 0) return GameState.PlayerReserve.Count > 0 ?  GameState.PlayerReserve.Last() : null;
+        if (playerId == 1) return GameState.OpponentReserve.Count > 0 ? GameState.OpponentReserve.Last() : null;
+        return null;
+    }
     
     public Card? DrawCard(int playerId)
     {
@@ -73,8 +96,20 @@ public class State
         return pile.Last();
     }
 
-    public Card? GetPlayerPileCard(int playerId) => 
-        playerId == 0 ? GameState.PlayerPile.LastOrDefault() : GameState.OpponentPile.LastOrDefault();
+    public Card? GetPlayerPileCard(int playerId)
+    {
+        if (playerId == 0) return GameState.PlayerPile.Count > 0 ?  GameState.PlayerPile.Last() : null;
+        if (playerId == 1) return GameState.OpponentPile.Count > 0 ? GameState.OpponentPile.Last() : null;
+        return null;
+    }
+
+    
+    public void ChangeTurn() {
+        GameState.TurnPlayerId = GameState.TurnPlayerId == 0 ? 1 : 0;
+        GameState.IsCardDrawn = false;
+    }
+
+    public void SetCardDrawn(bool val) => GameState.IsCardDrawn = val;
     
     public static List<Card>? GetList(string name, ref GameState gameState) => name switch
     {
@@ -142,7 +177,10 @@ public class State
                 StackRThree: s.StackRthree.Count > 0 ? [s.StackRthree.Last().Name] : [],
                 StackRFour: s.StackRfour.Count > 0 ? [s.StackRfour.Last().Name] : [],
                 
-                Turn: s.Turn
+                Turn: s.TurnPlayerId,
+                IsCardDrawn: s.IsCardDrawn,
+                
+                PlayerId: 0
             );
         
         return new Snapshot(
@@ -174,7 +212,10 @@ public class State
             StackRThree: s.StackRthree.Count > 0 ? [s.StackRthree.Last().Name] : [],
             StackRFour: s.StackRfour.Count > 0 ? [s.StackRfour.Last().Name] : [],
                 
-            Turn: s.Turn
+            Turn: s.TurnPlayerId,
+            IsCardDrawn: s.IsCardDrawn,
+            
+            PlayerId: 1
         );
     }
 }
@@ -209,7 +250,8 @@ public struct GameState()
     public List<Card> StackRthree = [];
     public List<Card> StackRfour = [];
 
-    public int Turn = 0;
+    public int TurnPlayerId = 0;
+    public bool IsCardDrawn = false;
 }
 
 public record Snapshot(
@@ -241,5 +283,8 @@ public record Snapshot(
     [property: JsonPropertyName("stack_r_three")] string[] StackRThree,
     [property: JsonPropertyName("stack_r_four")] string[] StackRFour,
     
-    [property: JsonPropertyName("turn")] int Turn
+    [property: JsonPropertyName("turn_player_id")] int Turn,
+    [property: JsonPropertyName("is_card_drawn")] bool IsCardDrawn,
+    
+    [property: JsonPropertyName("player_id")] int PlayerId
 );

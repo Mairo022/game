@@ -41,6 +41,7 @@ function is_valid_opponent_drop(opponent_id, card_str, state) {
 }
 
 function is_valid_move(target_id, card, state, target) {
+    if (state.turn_player_id !== state.player_id) return false;
     if (TARGETS.pile === target) return is_valid_pile_drop(target_id, card, state);
     if (TARGETS.stack === target) return is_valid_stack_drop(target_id, card, state);
     if (TARGETS.opponent_pile === target || TARGETS.opponent_reserve === target) {
@@ -50,6 +51,17 @@ function is_valid_move(target_id, card, state, target) {
     return false;
 }
 
+function is_player_turn(state) {
+    return state.turn_player_id === state.player_id;
+}
+
+function is_valid_turn_end(state) {
+    if (state.player_cards_len[1] === 0 && state.player_cards_len[2] === 0) return true;
+    return state.is_card_drawn;
+}
+
 export  {
-    is_valid_move
+    is_valid_move,
+    is_player_turn,
+    is_valid_turn_end
 }

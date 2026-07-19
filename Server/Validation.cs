@@ -3,7 +3,6 @@ using static Server.Constants;
 
 public static class Validation
 {
-    // Todo: check for player_id in Room to determine if is their move
     public static bool IsValidMove(MoveMessage incoming, ref GameState state)
     {
         var src = State.GetList(incoming.Src, ref state);
@@ -55,5 +54,17 @@ public static class Validation
         
         return false;
     }
+    
+    public static bool IsValidTurnEnd(Connection conn, ref GameState state)
+    {
+        var pileLength = conn.TurnId == 0 ? state.PlayerPile.Count : state.OpponentPile.Count;
+        var deckLength = conn.TurnId == 0 ? state.PlayerDeck.Count : state.OpponentDeck.Count;
+        
+        if (pileLength == 0 && deckLength == 0) return false;
+        return state.IsCardDrawn;
+    }
+
+    public static bool IsValidDrawCard(ref GameState state) => state.IsCardDrawn;
+    public static bool IsPlayerTurn(Connection conn, ref GameState state) => state.TurnPlayerId == conn.TurnId;
 }
 

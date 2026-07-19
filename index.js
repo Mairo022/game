@@ -1,27 +1,40 @@
 import {pile_names} from "./constants.js"
 import {render_all, render_piles, render_player_cards} from "./render.js";
-import {is_valid_move} from "./validation.js";
+import {is_player_turn, is_valid_move, is_valid_turn_end} from "./validation.js";
 import {
     reset_state,
-    state,
+    state, state_allow_draw_card, state_end_turn, state_init_decks,
     state_move_card,
 } from "./state.js";
 import {
-    btn_create_room, btn_join_room, btn_start_sp,
+    btn_create_room, btn_end_turn, btn_get_snap, btn_join_room, btn_start_sp,
     create_ghost_card_auto_move,
     el_player_card_area, el_player_deck_area,
     el_player_reserve, el_player_ws_status, el_room_id,
     inp_room_id
 } from "./elements.js";
-import {create_deck, create_move_obj, get_coordinates_for_move, shuffle} from "./utils.js";
-import {ws_create_room, ws_join_room, ws_send, ws_send_move} from "./websocket.js";
+import {create_move_obj, get_coordinates_for_move} from "./utils.js";
+import {ws_create_room, ws_end_turn, ws_get_snap, ws_join_room, ws_send, ws_send_move} from "./websocket.js";
 import {on_card_pointer_down, on_deck_click, on_pile_pointer_down} from "./events.js";
+
+btn_end_turn.addEventListener("click", _ => {
+    console.log("end_turn clicked", state);
+
+    if (!is_player_turn(state)) return;
+    if (!is_valid_turn_end(state)) return;
+    ws_end_turn();
+    state_end_turn(state.player_id);
+})
+
+btn_get_snap.addEventListener("click", _ => {
+    ws_get_snap();
+})
 
 btn_start_sp.addEventListener("click", (e) => {
     handle_game_start(false);
 })
 
-inp_room_id.addEventListener("keyup", (e) => {
+inp_room_id.addEventListener("keyup", _ => {
     btn_join_room.disabled = inp_room_id.value.trim() === "";
 })
 
@@ -57,34 +70,21 @@ function ws_behaviour_draw_card_opponent(card) {
 el_player_deck_area.addEventListener("click", on_deck_click);
 
 // Moving the cards
-let el_pile_areas = pile_names.map(pile => document.getElementById(pile));
-let el_main_card = el_player_card_area.querySelector(".main_card_one");
-let el_reserve_card = el_player_reserve.querySelector(".reserve_card");
-el_pile_areas.forEach(pile => {pile.addEventListener("pointerdown", on_pile_pointer_down)})
-el_main_card.addEventListener("pointerdown", on_card_pointer_down);
-el_reserve_card.addEventListener("pointerdown", on_card_pointer_down);
-el_pile_areas = null;
-el_main_card = null;
-el_reserve_card = null;
+pile_names.map(pile => document.getElementById(pile)).forEach(pile => {pile
+    .addEventListener("pointerdown", on_pile_pointer_down)});
+el_player_card_area.querySelector(".main_card_one")
+    .addEventListener("pointerdown", on_card_pointer_down);
+el_player_reserve.querySelector(".reserve_card")
+    .addEventListener("pointerdown", on_card_pointer_down);
 
 function handle_game_start(is_mp) {
     reset_state()
 
     if (is_mp) {
         state.is_mp = true;
-
     } else {
         state.is_mp = false;
-
-        const deck = create_deck();
-        shuffle(deck);
-        state.player_reserve = deck.slice(0, 10);
-        state.player_deck = deck.slice(10);
-
-        const deck2 = create_deck();
-        shuffle(deck2);
-        state.opponent_reserve = deck2.slice(0, 10);
-        state.opponent_deck = deck2.slice(10);
+        state_init_decks();
     }
     console.log(state)
     render_all(state);
@@ -94,6 +94,7 @@ function handle_card_drop(src, target, target_type) {
     const card = state[src].at(-1)
 
     if (!is_valid_move(target, card, state, target_type)) return false;
+    if (src === "player_pile") state_allow_draw_card();
 
     state_move_card(src, target);
     render_all(state);
@@ -102,13 +103,6 @@ function handle_card_drop(src, target, target_type) {
 
     return true;
 }
-
-// Socket mock
-// msg = src -> target -> state_id -> turn_id
-// state is to roll_back and to reject all gotten further moves server-side since invalid move
-// client sends moves 55 (Invalid), 56 (valid), 57 (valid), server sees 55 invalid and rejects 56, 57
-
-const waiting_moves_confirmation = []
 
 function socket_on_get_move(msg) {
     const [src, target, state_id, turn_id] = msg.split("-");
@@ -166,14 +160,9 @@ document.addEventListener("keyup", event => {
     }
 })
 
-function readTest(data) {
-    console.log("From socket", data);
-}
-
 export {
     ws_behaviour_set_player_connection,
     ws_behaviour_set_room,
-    readTest,
     handle_card_drop,
     handle_game_start
 }
