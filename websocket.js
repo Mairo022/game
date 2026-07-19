@@ -7,7 +7,7 @@ import {
     state_move_card_mp,
     state_set_player_id
 } from "./state.js";
-import {render_all, render_opponent_cards, render_player_cards} from "./render.js";
+import {render_all, render_turn_elements, render_opponent_cards, render_player_cards} from "./render.js";
 
 let ws;
 
@@ -102,6 +102,7 @@ function ws_on_message(event) {
 
     if (msg.Type === "end_turn_op") {
         state_end_turn(!state.player_id)
+        render_turn_elements(state)
         return;
     }
 

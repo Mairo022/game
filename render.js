@@ -7,7 +7,13 @@ import {
     el_cards_left,
     el_deck_left,
     el_o_reserve,
-    el_o_reserve_left, el_o_card, el_o_pile_left, el_o_deck_left, el_o_deck
+    el_o_reserve_left,
+    el_o_card,
+    el_o_pile_left,
+    el_o_deck_left,
+    el_o_deck,
+    btn_end_turn,
+    el_turn_indicator
 } from "./elements.js";
 
 function render_player_cards(state) {
@@ -16,9 +22,11 @@ function render_player_cards(state) {
         const value = card.split("-")[0]
         el_reserve.dataset.value = value;
         el_reserve.textContent = value;
+        el_reserve.classList.add("pickable");
     } else {
         el_reserve.dataset.value = "-1";
         el_reserve.textContent = "";
+        el_reserve.classList.remove("pickable");
     }
 
     if (state.player_pile.length > 0) {
@@ -26,9 +34,11 @@ function render_player_cards(state) {
         const value = card.split("-")[0]
         el_card.dataset.value = value;
         el_card.textContent = value;
+        el_card.classList.add("pickable");
     } else {
         el_card.dataset.value = "-1";
         el_card.textContent = "";
+        el_card.classList.remove("pickable");
     }
 
     if (state.player_deck.length > 0) {
@@ -50,7 +60,10 @@ function render_piles(state) {
         const pile = document.querySelector(`#${pile_id}`);
         pile.innerHTML = "";
 
-        for (const card_info of state[pile_id]) {
+        const pile_len = state[pile_id].length-1;
+
+        for (let i = 0; i <= pile_len; i++) {
+            const card_info = state[pile_id][i];
             const sample_pile_card = document.createElement("div");
             const value = card_info.split("-")[0];
 
@@ -58,6 +71,7 @@ function render_piles(state) {
             sample_pile_card.dataset.value = value
             sample_pile_card.dataset.src = pile_id;
             sample_pile_card.textContent = value;
+            if (i === pile_len) sample_pile_card.classList.add("pickable");
 
             pile.appendChild(sample_pile_card);
         }
@@ -117,11 +131,17 @@ function render_opponent_cards(state) {
     el_o_deck_left.textContent = state.opponent_cards_len[2];
 }
 
+function render_turn_elements(state) {
+    el_turn_indicator.classList.toggle("turn-opponent", state.player_id !== state.turn_player_id);
+    btn_end_turn.disabled = !(state.is_card_drawn && state.player_id === state.turn_player_id)
+}
+
 function render_all(state) {
     render_player_cards(state);
     render_opponent_cards(state);
     render_piles(state);
     render_stacks(state);
+    render_turn_elements(state);
 }
 
 export {
@@ -129,5 +149,6 @@ export {
     render_player_cards,
     render_piles,
     render_stacks,
-    render_all
+    render_all,
+    render_turn_elements
 }

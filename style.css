@@ -44,6 +44,16 @@ main {
     place-content: center;
 }
 
+#dot {
+    position: absolute;
+    top: 25%;
+    left: 4px;
+    transform: translate(-50%, -50%);
+    width: 4px;
+    height: 4px;
+    background: rgb(255 140 190 / 0.95);
+}
+
 #game {
     position: relative;
     display: grid;
@@ -61,6 +71,32 @@ main {
     place-items: center;
     gap: 8px;
     z-index: 9;
+}
+
+button {
+    font-size: .9rem;
+    padding: 6px 10px;
+    width: 100px;
+    text-align: center;
+    outline: none;
+    border-radius: 4px;
+    border: 1px solid hsl(0 0% 55%);
+    background-color: hsl(0 0% 95%);
+
+    &:enabled:hover {
+        background-color: hsl(0 0% 90%);
+        border: 1px solid hsl(0 0% 45%);
+    }
+}
+
+#input_room_id {
+    font-size: .9rem;
+    padding: 6px 10px;
+    width: 80px;
+    text-align: center;
+    outline: none;
+    border-radius: 4px;
+    border: 1px solid hsl(none 0% 55%);
 }
 
 #player_ws_status {
@@ -100,6 +136,68 @@ main {
     gap: 0.5em;
 }
 
+#player {
+    position: relative;
+    width: 100%;
+    max-width: 620px;
+    justify-self: center;
+}
+
+#player_deck:hover {
+    transform: scale(1.02);
+}
+
+#indicator_box {
+    position: absolute;
+    right: 0;
+    z-index: 55;
+    width: 80px;
+    height: 160px;
+    left:0;
+    top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: right;
+
+    #indicator_turn {
+        height: 24px;
+        width: 24px;
+        background: #7dcd77;
+        border: 1px solid hsl(0 0% 54%);
+        border-radius: 4px;
+
+        &.turn-opponent {
+            background: hsl(0 0% 55%);
+            border: 1px solid hsl(0 0% 48%);
+        }
+    }
+}
+
+#end_turn {
+    position: absolute;
+    right: 0;
+    z-index: 55;
+    width: 80px;
+    height: 160px;
+    top: 14px;
+    box-shadow: #00000022 0 0 4px 0px;
+    border: 2px solid hsl(211 26% 50% / 0.90);
+    background-color: hsl(180 4% 92% / 0.95);
+    color: hsl(0 0% 8% / 0.96);
+    border-radius: 30px;
+
+    &:enabled:hover {
+        box-shadow: #00000022 0 0 10px 2px;
+        border: 2px solid hsl(211 26% 46% / 0.90);
+        background-color: hsl(180 4% 92% / 0.95);
+        cursor: pointer;
+    }
+
+    &:disabled {
+        background-color: hsl(180 4% 86% / 0.95);
+    }
+}
+
 .player_cards, .game_field_row {
     display: flex;
     flex-wrap: nowrap;
@@ -116,6 +214,10 @@ main {
 
 .cards_left {
     height: 24px;
+}
+
+.pickable:hover {
+    transform: translateY(-2px);
 }
 
 .card {

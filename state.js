@@ -43,6 +43,7 @@ function reset_state() {
 
 function state_end_turn(player_id) {
     state.turn_player_id = !player_id * 1;
+    state.is_card_drawn = false;
 }
 
 function state_draw_card() {

@@ -1,5 +1,5 @@
 import {pile_names} from "./constants.js"
-import {render_all, render_piles, render_player_cards} from "./render.js";
+import {render_all, render_turn_elements, render_piles, render_player_cards} from "./render.js";
 import {is_player_turn, is_valid_move, is_valid_turn_end} from "./validation.js";
 import {
     reset_state,
@@ -10,7 +10,7 @@ import {
     btn_create_room, btn_end_turn, btn_get_snap, btn_join_room, btn_start_sp,
     create_ghost_card_auto_move,
     el_player_card_area, el_player_deck_area,
-    el_player_reserve, el_player_ws_status, el_room_id,
+    el_player_reserve, el_player_ws_status,
     inp_room_id
 } from "./elements.js";
 import {create_move_obj, get_coordinates_for_move} from "./utils.js";
@@ -24,6 +24,7 @@ btn_end_turn.addEventListener("click", _ => {
     if (!is_valid_turn_end(state)) return;
     ws_end_turn();
     state_end_turn(state.player_id);
+    render_turn_elements(state);
 })
 
 btn_get_snap.addEventListener("click", _ => {
@@ -47,7 +48,8 @@ btn_create_room.addEventListener("click", _ => {
 })
 
 function ws_behaviour_set_room(room_id) {
-    el_room_id.textContent = room_id;
+    inp_room_id.value = "";
+    inp_room_id.placeholder = room_id;
 }
 
 function ws_behaviour_set_player_connection(is_connected) {
