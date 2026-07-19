@@ -53,7 +53,7 @@ public class State
         GameState.PileRfour.Add(pd.ElementAt(i));
         
         GameState.PlayerPile.Add(pd.ElementAt(--i));
-        GameState.OpponentPile.Add(od.ElementAt(--i));
+        GameState.OpponentPile.Add(od.ElementAt(i));
         
         pd.RemoveRange(i, 5);
         od.RemoveRange(i, 5);
