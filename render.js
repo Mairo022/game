@@ -21,11 +21,9 @@ function render_player_cards(state) {
         const card = state.player_reserve.at(-1);
         const value = card.split("-")[0]
         el_reserve.dataset.value = value;
-        el_reserve.textContent = value;
         el_reserve.classList.add("pickable");
     } else {
         el_reserve.dataset.value = "-1";
-        el_reserve.textContent = "";
         el_reserve.classList.remove("pickable");
     }
 
@@ -33,11 +31,9 @@ function render_player_cards(state) {
         const card = state.player_pile.at(-1);
         const value = card.split("-")[0]
         el_card.dataset.value = value;
-        el_card.textContent = value;
         el_card.classList.add("pickable");
     } else {
         el_card.dataset.value = "-1";
-        el_card.textContent = "";
         el_card.classList.remove("pickable");
     }
 
@@ -47,7 +43,6 @@ function render_player_cards(state) {
         el_deck.dataset.owner = owner;
     } else {
         el_deck.dataset.owner = "-1";
-        el_deck.textContent = "";
     }
 
     el_reserve_left.textContent = state.player_cards_len[0];
@@ -86,14 +81,13 @@ function render_stacks(state) {
 
         if (!last_card) {
             delete el_stack.dataset.value;
-            el_stack.textContent = "";
             continue;
         }
 
         const value = last_card.split("-")[0]
 
         el_stack.dataset.value = value;
-        el_stack.textContent = value;
+        el_stack.classList.add("card-up");
     }
 }
 
@@ -102,20 +96,16 @@ function render_opponent_cards(state) {
         const card = state.opponent_reserve.at(-1);
         const value = card.split("-")[0];
         el_o_reserve.dataset.value = value;
-        el_o_reserve.textContent = value;
     } else {
         el_o_reserve.dataset.value = "-1";
-        el_o_reserve.textContent = "";
     }
 
     if (state.opponent_pile.length > 0) {
         const card = state.opponent_pile.at(-1);
         const value = card.split("-")[0];
         el_o_card.dataset.value = value;
-        el_o_card.textContent = value;
     } else {
         el_o_card.dataset.value = "-1";
-        el_o_card.textContent = "";
     }
 
     if (state.opponent_deck.length > 0) {

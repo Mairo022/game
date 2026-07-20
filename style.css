@@ -413,13 +413,11 @@ button {
     }
 }
 
-[data-value^="D"],
-[data-value^="H"] {
+.card-up {
     background: #00000000 no-repeat center;
     background-size: 100% 100%;
     border: 1px solid #8d8d8d;
     font-size: 0;
-
 }
 
 [data-value="-1"] { background:  transparent; }
@@ -437,19 +435,19 @@ button {
 [data-value="DK"] { background-image: url("./img/DK.webp"); }
 [data-value="DA"] { background-image: url("./img/DA.webp"); }
 
-/*[data-value="C2"] { background-image: url("./img/C2.webp"); }*/
-/*[data-value="C3"] { background-image: url("./img/C3.webp"); }*/
-/*[data-value="C4"] { background-image: url("./img/C4.webp"); }*/
-/*[data-value="C5"] { background-image: url("./img/C5.webp"); }*/
-/*[data-value="C6"] { background-image: url("./img/C6.webp"); }*/
-/*[data-value="C7"] { background-image: url("./img/C7.webp"); }*/
-/*[data-value="C8"] { background-image: url("./img/C8.webp"); }*/
-/*[data-value="C9"] { background-image: url("./img/C9.webp"); }*/
-/*[data-value="C10"] { background-image: url("./img/C10.webp"); }*/
-/*[data-value="CJ"] { background-image: url("./img/CJ.webp"); }*/
-/*[data-value="CQ"] { background-image: url("./img/CQ.webp"); }*/
-/*[data-value="CK"] { background-image: url("./img/CK.webp"); }*/
-/*[data-value="CA"] { background-image: url("./img/CA.webp"); }*/
+[data-value="C2"] { background-image: url("./img/C2.webp"); }
+[data-value="C3"] { background-image: url("./img/C3.webp"); }
+[data-value="C4"] { background-image: url("./img/C4.webp"); }
+[data-value="C5"] { background-image: url("./img/C5.webp"); }
+[data-value="C6"] { background-image: url("./img/C6.webp"); }
+[data-value="C7"] { background-image: url("./img/C7.webp"); }
+[data-value="C8"] { background-image: url("./img/C8.webp"); }
+[data-value="C9"] { background-image: url("./img/C9.webp"); }
+[data-value="C10"] { background-image: url("./img/C10.webp"); }
+[data-value="CJ"] { background-image: url("./img/CJ.webp"); }
+[data-value="CQ"] { background-image: url("./img/CQ.webp"); }
+[data-value="CK"] { background-image: url("./img/CK.webp"); }
+[data-value="CA"] { background-image: url("./img/CA.webp"); }
 
 [data-value="H2"] { background-image: url("./img/H2.webp"); }
 [data-value="H3"] { background-image: url("./img/H3.webp"); }
@@ -465,16 +463,16 @@ button {
 [data-value="HK"] { background-image: url("./img/HK.webp"); }
 [data-value="HA"] { background-image: url("./img/HA.webp"); }
 
-/*[data-value="S2"] { background-image: url("./img/S2.webp"); }*/
-/*[data-value="S3"] { background-image: url("./img/S3.webp"); }*/
-/*[data-value="S4"] { background-image: url("./img/S4.webp"); }*/
-/*[data-value="S5"] { background-image: url("./img/S5.webp"); }*/
-/*[data-value="S6"] { background-image: url("./img/S6.webp"); }*/
-/*[data-value="S7"] { background-image: url("./img/S7.webp"); }*/
-/*[data-value="S8"] { background-image: url("./img/S8.webp"); }*/
-/*[data-value="S9"] { background-image: url("./img/S9.webp"); }*/
-/*[data-value="S10"] { background-image: url("./img/S10.webp"); }*/
-/*[data-value="SJ"] { background-image: url("./img/SJ.webp"); }*/
-/*[data-value="SQ"] { background-image: url("./img/SQ.webp"); }*/
-/*[data-value="SK"] { background-image: url("./img/SK.webp"); }*/
-/*[data-value="SA"] { background-image: url("./img/SA.webp"); }*/
+[data-value="S2"] { background-image: url("./img/S2.webp"); }
+[data-value="S3"] { background-image: url("./img/S3.webp"); }
+[data-value="S4"] { background-image: url("./img/S4.webp"); }
+[data-value="S5"] { background-image: url("./img/S5.webp"); }
+[data-value="S6"] { background-image: url("./img/S6.webp"); }
+[data-value="S7"] { background-image: url("./img/S7.webp"); }
+[data-value="S8"] { background-image: url("./img/S8.webp"); }
+[data-value="S9"] { background-image: url("./img/S9.webp"); }
+[data-value="S10"] { background-image: url("./img/S10.webp"); }
+[data-value="SJ"] { background-image: url("./img/SJ.webp"); }
+[data-value="SQ"] { background-image: url("./img/SQ.webp"); }
+[data-value="SK"] { background-image: url("./img/SK.webp"); }
+[data-value="SA"] { background-image: url("./img/SA.webp"); }
