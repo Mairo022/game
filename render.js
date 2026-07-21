@@ -15,6 +15,7 @@ import {
     btn_end_turn,
     el_turn_indicator
 } from "./elements.js";
+import {is_valid_turn_end} from "./validation.js";
 
 function render_player_cards(state) {
     if (state.player_reserve.length > 0) {
@@ -123,7 +124,7 @@ function render_opponent_cards(state) {
 
 function render_turn_elements(state) {
     el_turn_indicator.classList.toggle("turn-opponent", state.player_id !== state.turn_player_id);
-    btn_end_turn.disabled = !(state.is_card_drawn && state.player_id === state.turn_player_id)
+    btn_end_turn.disabled = !(state.player_id === state.turn_player_id && is_valid_turn_end(state))
 }
 
 function render_all(state) {

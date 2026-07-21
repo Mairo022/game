@@ -56,7 +56,7 @@ function is_player_turn(state) {
 }
 
 function is_valid_turn_end(state) {
-    if (state.player_cards_len[1] === 0 && state.player_cards_len[2] === 0) return true;
+    if (state.player_cards_len[1] <= 1 && state.player_cards_len[2] === 0) return true;
     return state.is_card_drawn;
 }
 

@@ -60,7 +60,7 @@ public static class Validation
         var pileLength = conn.TurnId == 0 ? state.PlayerPile.Count : state.OpponentPile.Count;
         var deckLength = conn.TurnId == 0 ? state.PlayerDeck.Count : state.OpponentDeck.Count;
         
-        if (pileLength == 0 && deckLength == 0) return false;
+        if (pileLength <= 1 && deckLength == 0) return true;
         return state.IsCardDrawn;
     }
 
