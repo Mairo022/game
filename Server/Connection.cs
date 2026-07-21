@@ -8,6 +8,7 @@ public class Connection(WebSocket socket)
     public readonly WebSocket Socket = socket;
     public int TurnId;
     public Room? Room;
+    public DateTime LastSeen = DateTime.Now;
 
     public void DisconnectFromRoom()
     {

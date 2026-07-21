@@ -31,9 +31,14 @@ function ws_on_open() {
 }
 
 function ws_on_message(event) {
-    console.log("Received message", event);
-
     const msg = JSON.parse(event.data);
+
+    if (msg.Type === "ping") {
+        ws_send_no_log("pong");
+        return;
+    }
+
+    console.log("Received message", event);
     console.log(`Received:\nType = ${msg.Type}; Data = ${JSON.stringify(msg.Data)}`);
 
     if (msg.Type === "move") {
@@ -149,6 +154,14 @@ function ws_close() {
 function ws_send(data) {
     if (ws.readyState === WebSocket.OPEN) {
         console.log("Sending\n", data);
+        ws.send(data);
+    } else {
+        console.warn("WS not open");
+    }
+}
+
+function ws_send_no_log(data) {
+    if (ws.readyState === WebSocket.OPEN) {
         ws.send(data);
     } else {
         console.warn("WS not open");

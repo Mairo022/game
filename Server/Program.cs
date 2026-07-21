@@ -1,4 +1,5 @@
 ﻿using static Server.Utils;
+using static Server.Heartbeat;
 using System.Net.WebSockets;
 using System.Text;
 using Server;
@@ -11,6 +12,7 @@ var connections = new Dictionary<string, Connection>();
 var rooms = new Dictionary<string, Room>();
 
 app.UseWebSockets();
+_ = Task.Run(() => HeartbeatLoop(connections, TimeSpan.FromSeconds(15)));
 
 app.Map("/ws", async context =>
 {
@@ -42,6 +44,7 @@ app.Map("/ws", async context =>
         
         if (result.MessageType == WebSocketMessageType.Close)
         {
+            Console.WriteLine("Connection lost");
             connection.DisconnectFromRoom();
             connections.Remove(connection.Id);
             if (room?.Count == 0) rooms.Remove(room.Id);
@@ -49,8 +52,15 @@ app.Map("/ws", async context =>
         }
         
         var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
+        
+        if (msg.Equals("pong"))
+        {
+            connection.LastSeen = DateTime.Now;
+            continue;
+        }
+        
         Console.WriteLine($@"Received {msg}");
-
+        
         if (msg.Equals("create_room"))
         {
             // Note: Auto connect to available room
