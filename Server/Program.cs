@@ -4,6 +4,7 @@ using System.Text;
 using Server;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseUrls("http://127.0.0.1:5005");
 var app = builder.Build();
 
 var connections = new Dictionary<string, Connection>();
@@ -52,16 +53,16 @@ app.Map("/ws", async context =>
 
         if (msg.Equals("create_room"))
         {
-            // Auto connect to available room, for testing
-            room = rooms.Values.FirstOrDefault();
-            if (room is not null)
-            {
-                if (await room.Connect(connection))
-                {
-                    connection.Room = room;
-                    continue;
-                }
-            }
+            // Note: Auto connect to available room
+            // room = rooms.Values.FirstOrDefault();
+            // if (room is not null)
+            // {
+            //     if (await room.Connect(connection))
+            //     {
+            //         connection.Room = room;
+            //         continue;
+            //     }
+            // }
             connection.DisconnectFromRoom();
             if (room?.Count == 0) rooms.Remove(room.Id);
 
