@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./style.css?v100">
+    <link rel="stylesheet" href="./style.css?v101">
     <script type="module" src="index.js"></script>
     <title>Crapette</title>
 </head>
@@ -22,42 +22,42 @@
         <div id="opponent" class="row_1 player_cards">
             <div id="o_reserve_area" class="card_area">
                 <span class="cards_left"></span>
-                <div id="opponent_reserve" class="card reserve_card card-up"></div>
+                <div id="opponent_reserve" class="card reserve_card card-up droppable"></div>
             </div>
             <div id="o_pile_area" class="card_area">
                 <span class="cards_left"></span>
-                <div id="opponent_pile" class="card main_card_one card-up"></div>
+                <div id="opponent_pile" class="card main_card_one card-up droppable"></div>
             </div>
             <div id="o_deck_area" class="card_area">
                 <span class="cards_left"></span>
-                <div id="opponent_deck" class="card main_deck_one card-down"></div>
+                <div id="opponent_deck" class="card main_deck_one card-down droppable"></div>
             </div>
         </div>
         <div id="game_field" class="row_2">
             <div class="game_field_rows">
                 <div class="game_field_row">
-                    <div id="pile_l_one" class="pile pile_left"></div>
-                    <div id="stack_l_one" class="stack stack_left"></div>
-                    <div id="stack_r_one" class="stack stack_right"></div>
-                    <div id="pile_r_one" class="pile pile_right"></div>
+                    <div id="pile_l_one" class="pile pile_left droppable"></div>
+                    <div id="stack_l_one" class="stack stack_left droppable"></div>
+                    <div id="stack_r_one" class="stack stack_right droppable"></div>
+                    <div id="pile_r_one" class="pile pile_right droppable"></div>
                 </div>
                 <div class="game_field_row">
-                    <div id="pile_l_two" class="pile pile_left"></div>
-                    <div id="stack_l_two" class="stack stack_left"></div>
-                    <div id="stack_r_two" class="stack stack_right"></div>
-                    <div id="pile_r_two" class="pile pile_right"></div>
+                    <div id="pile_l_two" class="pile pile_left droppable"></div>
+                    <div id="stack_l_two" class="stack stack_left droppable"></div>
+                    <div id="stack_r_two" class="stack stack_right droppable"></div>
+                    <div id="pile_r_two" class="pile pile_right droppable"></div>
                 </div>
                 <div class="game_field_row">
-                    <div id="pile_l_three" class="pile pile_left"></div>
-                    <div id="stack_l_three" class="stack stack_left"></div>
-                    <div id="stack_r_three" class="stack stack_right"></div>
-                    <div id="pile_r_three" class="pile pile_right"></div>
+                    <div id="pile_l_three" class="pile pile_left droppable"></div>
+                    <div id="stack_l_three" class="stack stack_left droppable"></div>
+                    <div id="stack_r_three" class="stack stack_right droppable"></div>
+                    <div id="pile_r_three" class="pile pile_right droppable"></div>
                 </div>
                 <div class="game_field_row">
-                    <div id="pile_l_four" class="pile pile_left"></div>
-                    <div id="stack_l_four" class="stack stack_left"></div>
-                    <div id="stack_r_four" class="stack stack_right"></div>
-                    <div id="pile_r_four" class="pile pile_right"></div>
+                    <div id="pile_l_four" class="pile pile_left droppable"></div>
+                    <div id="stack_l_four" class="stack stack_left droppable"></div>
+                    <div id="stack_r_four" class="stack stack_right droppable"></div>
+                    <div id="pile_r_four" class="pile pile_right droppable"></div>
                 </div>
             </div>
         </div>
@@ -77,7 +77,7 @@
                 <div id="player_deck" class="card main_deck_one card-down"></div>
                 <span class="cards_left"></span>
             </div>
-            <button id="end_turn">Next Turn</button>
+            <button id="end_turn" disabled="disabled">Next Turn</button>
         </div>
     </section>
 </main>

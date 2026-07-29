@@ -121,10 +121,6 @@ button {
     border: 1px solid #e8c50e;
 }
 
-#game_field {
-
-}
-
 #game_field, .player_cards {
     place-content: center;
     padding: .5em 80px;
@@ -476,3 +472,106 @@ button {
 [data-value="SQ"] { background-image: url("./img/SQ.webp"); }
 [data-value="SK"] { background-image: url("./img/SK.webp"); }
 [data-value="SA"] { background-image: url("./img/SA.webp"); }
+
+@media (max-width: 550px) {
+    :root {
+        --border-radius: 2px;
+        --shadow: 0 0 4px hsla(0, 0%, 40%, 0.5);
+        --shadow-hover: 0 0 6px hsla(0, 0%, 40%, 0.5);
+        --root-bg: hsl(20, 4%, 11%);
+        --card-width: 57px;
+        --card-height: 81px;
+    }
+
+    .connection {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        display: flex;
+        flex-direction: column;
+        place-items: center;
+        gap: 8px;
+        z-index: 9;
+    }
+
+    button {
+        font-size: .7rem;
+        padding: 6px 10px;
+        width: 80px;
+    }
+
+    #input_room_id {
+        font-size: .8rem;
+        padding: 6px 10px;
+        width: 80px;
+    }
+
+    #player_ws_status {
+        height: 18px;
+        width: 18px;
+        box-shadow: #00000022 0 0 2px;
+        border-radius: 50%;
+    }
+
+    #game_field, .player_cards {
+        place-content: center;
+        padding: .5em;
+    }
+
+    .pile_left {
+        margin-right: 2px;
+
+        .card:last-child {
+            margin-left: -36px;
+        }
+
+        .card:not(:first-child) {
+            margin-right: -46px;
+        }
+    }
+
+    .pile_right {
+        margin-left: 2px;
+
+        .card:last-child {
+            margin-right: -36px;
+        }
+
+        .card:not(:first-child) {
+            margin-left: -46px;
+        }
+    }
+
+    .player_cards, .game_field_row {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: center;
+        gap: 0;
+    }
+
+    #end_turn {
+        font-size: 12px;
+        right: 5%;
+        width: 60px;
+        height: 80px;
+        top: 10px;
+    }
+
+    #indicator_box {
+        width: 80px;
+        height: 100px;
+        top: 0;
+        display: flex;
+        align-items: center;
+        justify-content: right;
+
+        #indicator_turn {
+            height: 16px;
+            width: 16px;
+        }
+    }
+
+    .card_area {
+        font-size: .8rem;
+    }
+}

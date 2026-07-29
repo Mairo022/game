@@ -74,7 +74,8 @@ function on_card_pointer_up(e) {
     if (!ghost.el) return;
     let src;
     let target_type;
-    const target = e.target.id || e.target.parentElement?.id;
+    const el_target = document.elementFromPoint(e.clientX, e.clientY).closest(".droppable")
+    const target = el_target?.id || el_target.parentElement?.id
 
     if (!target) console.error("Error: drop ID not found");
 
@@ -86,16 +87,16 @@ function on_card_pointer_up(e) {
         src = ghost.el.dataset.src;
     else console.error(`Err: invalid ghost class {on_card_pointer_up} \n${ghost.el.classList}`);
 
-    if (e.target.parentElement.classList.contains("pile") || e.target.classList.contains("pile"))
+    if (el_target.parentElement.classList.contains("pile") || el_target.classList.contains("pile"))
         target_type = TARGETS.pile;
-    else if (e.target.classList.contains("stack"))
+    else if (el_target.classList.contains("stack"))
         target_type = TARGETS.stack;
-    else if (e.target.id === "opponent_pile")
+    else if (el_target.id === "opponent_pile")
         target_type = TARGETS.opponent_pile;
-    else if (e.target.id === "opponent_reserve") {
+    else if (el_target.id === "opponent_reserve") {
         target_type = TARGETS.opponent_reserve;
     }
-    else console.error(`Err: invalid drop element {on_card_pointer_up} \nclass: ${e.target?.classList}, id: ${e.target?.id}`);
+    else console.error(`Err: invalid drop element {on_card_pointer_up} \nclass: ${el_target?.classList}, id: ${el_target?.id}`);
 
     if (src && target_type && target) {
         handle_card_drop(src, target, target_type)
