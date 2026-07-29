@@ -43,13 +43,12 @@ function create_ghost_card_auto_move(x, y, value) {
     const ghost = document.createElement("div");
     ghost.classList.add("card")
     ghost.classList.add("card-up")
-    ghost.classList.add("ghosty") // Class for image
+    ghost.dataset.value = value;
     ghost.style.position = "fixed";
     ghost.style.left = x + "px";
     ghost.style.top = y + "px";
     ghost.style.zIndex = "9999";
-    ghost.style.transition = "transform 0.4s ease-in-out";
-    ghost.textContent = value;
+    ghost.style.transition = "transform 0.35s ease-in-out";
     document.body.appendChild(ghost);
     return ghost;
 }

@@ -1,5 +1,5 @@
 import {pile_names} from "./constants.js"
-import {render_all, render_turn_elements, render_piles, render_player_cards} from "./render.js";
+import {render_all, render_turn_elements} from "./render.js";
 import {is_player_turn, is_valid_move, is_valid_turn_end} from "./validation.js";
 import {
     reset_state,
@@ -116,21 +116,14 @@ function socket_on_get_move(msg) {
         return;
     }
 
-    socket_behaviour_auto_move_card(src, target);
-    socket_behaviour_update_state(state, src, target);
-
-    setTimeout(() => {
-        render_player_cards(state)
-        render_piles(state);
-    }, 400)
+    socket_behaviour_auto_move_card(src, target, state);
 }
 
-// Todo: match player_card ID and state key
-function socket_behaviour_auto_move_card(src, target) {
+function socket_behaviour_auto_move_card(src, target, state) {
     const src_coords = get_coordinates_for_move(`#${src}`);
     const target_coords = get_coordinates_for_move(`#${target}`);
 
-    const card_value = Array.isArray(state[src]) ? state[src].at(-1).split("-")[0] : state[src].split("-")[0];
+    const card_value = state[src].at(-1).split("-")[0];
     const ghost = create_ghost_card_auto_move(src_coords.x, src_coords.y, card_value)
 
     const dx = target_coords.x - src_coords.x;
@@ -139,14 +132,14 @@ function socket_behaviour_auto_move_card(src, target) {
     ghost.getBoundingClientRect();
     ghost.style.transform = `translate(${dx}px, ${dy}px)`;
 
-    ghost.addEventListener('transitionend', (e) => {
+    state_move_card_mp(src, target);
+
+    ghost.addEventListener('transitionend', () => {
         ghost.remove();
+        render_all(state);
     });
 }
 
-function socket_behaviour_update_state(state, src, target, id) {
-    state_move_card(src, target);
-}
 
 document.addEventListener("keyup", event => {
     if (event.key === "o") {
@@ -154,7 +147,6 @@ document.addEventListener("keyup", event => {
     }
     if (event.key === "p") {
         socket_on_get_move("player_pile-pile_r_three-10-1")
-        ws_send("create_room");
     }
     if (event.key === "i") {
         socket_on_get_move("opponent_pile-pile_r_three-10-1")
@@ -168,5 +160,6 @@ export {
     ws_behaviour_set_player_connection,
     ws_behaviour_set_room,
     handle_card_drop,
-    handle_game_start
+    handle_game_start,
+    socket_behaviour_auto_move_card
 }

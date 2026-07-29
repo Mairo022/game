@@ -1,4 +1,9 @@
-import {handle_game_start, ws_behaviour_set_player_connection, ws_behaviour_set_room} from "./index.js";
+import {
+    handle_game_start,
+    socket_behaviour_auto_move_card,
+    ws_behaviour_set_player_connection,
+    ws_behaviour_set_room
+} from "./index.js";
 import {
     state,
     state_apply_snapshot,
@@ -45,8 +50,7 @@ function ws_on_message(event) {
         msg.Data.Src = msg.Data.Src.replace("player", "opponent");
         msg.Data.Target = msg.Data.Target.replace("opponent", "player");
 
-        state_move_card_mp(msg.Data.Src, msg.Data.Target);
-        render_all(state);
+        socket_behaviour_auto_move_card(msg.Data.Src, msg.Data.Target, state);
         return;
     }
 
