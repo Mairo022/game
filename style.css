@@ -182,19 +182,19 @@ button {
     top: 14px;
     box-shadow: #00000022 0 0 4px 0px;
     border: 2px solid hsl(211 26% 50% / 0.90);
-    background-color: hsl(180 4% 92% / 0.95);
+    background-color: hsl(180 4% 96% / 0.95);
     color: hsl(0 0% 8% / 0.96);
     border-radius: 30px;
 
     &:enabled:hover {
         box-shadow: #00000022 0 0 10px 2px;
         border: 2px solid hsl(211 26% 46% / 0.90);
-        background-color: hsl(180 4% 92% / 0.95);
+        background-color: hsl(180 4% 96% / 0.95);
         cursor: pointer;
     }
 
     &:disabled {
-        background-color: hsl(180 4% 86% / 0.95);
+        background-color: hsl(180 4% 92% / 0.95);
     }
 }
 
