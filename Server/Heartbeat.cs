@@ -5,10 +5,13 @@ namespace Server;
 
 public static class Heartbeat
 {
-    static byte[] _ping = Encoding.UTF8.GetBytes("{\"Type\":\"ping\"}");
+    static readonly byte[] _ping = Encoding.UTF8.GetBytes("{\"Type\":\"ping\"}");
+    static TimeSpan _pingInterval = TimeSpan.FromSeconds(1);
     
     public static async Task HeartbeatLoop(Dictionary<string, Connection> connections, TimeSpan timespan)
     {
+        _pingInterval = timespan / 3;
+        
         while (true)
         {
             foreach (var kvp in connections)
@@ -21,13 +24,18 @@ public static class Heartbeat
 
                     try
                     {
-                        await player.Socket.CloseAsync(
-                            WebSocketCloseStatus.NormalClosure,
-                            "Timeout",
-                            CancellationToken.None);
+                        player.DisconnectFromRoom();
+                        connections.Remove(kvp.Key);
+                        
+                        if (player.Socket.State == WebSocketState.Open)
+                            await player.Socket.CloseAsync(
+                                WebSocketCloseStatus.NormalClosure,
+                                "Timeout",
+                                CancellationToken.None);
+                        
+                        player.Socket.Dispose();
                     }
                     catch {}
-                    
                     continue;
                 }
             
@@ -43,12 +51,14 @@ public static class Heartbeat
                     }
                     catch
                     {
+                        player.DisconnectFromRoom();
                         connections.Remove(kvp.Key);
+                        player.Socket.Dispose();
                     }
                 }
             }
 
-            await Task.Delay(5000);
+            await Task.Delay(_pingInterval);
         }
     }
 }
