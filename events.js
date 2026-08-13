@@ -31,6 +31,7 @@ function on_deck_click() {
     render_player_cards(state)
 }
 
+//todo: fix doublecards when picking up text also
 function on_pile_pointer_down(e) {
     if (!is_player_turn(state)) return;
 
@@ -75,6 +76,14 @@ function on_card_pointer_up(e) {
     let src;
     let target_type;
     const el_target = document.elementFromPoint(e.clientX, e.clientY).closest(".droppable")
+
+    if (!el_target) {
+        window.removeEventListener("pointermove", on_card_pointer_move);
+        window.removeEventListener("pointerup", on_card_pointer_up);
+        ghost.el.remove();
+        ghost.el = null;
+        return
+    }
     const target = el_target?.id || el_target.parentElement?.id
 
     if (!target) console.error("Error: drop ID not found");
