@@ -16,6 +16,7 @@ _ = Task.Run(() => HeartbeatLoop(connections, TimeSpan.FromSeconds(15)));
 
 app.Map("/ws", async context =>
 {
+    // Console.WriteLine($"Rooms count: {rooms.Count}");
     var socket = await context.WebSockets.AcceptWebSocketAsync();
     var connection = new Connection(socket);
     Room? room = null;
@@ -48,9 +49,9 @@ app.Map("/ws", async context =>
 
             if (result.MessageType == WebSocketMessageType.Close)
             {
-                Console.WriteLine("Connection lost");
+                // Console.WriteLine("Connection lost");
                 RemoveConnection(connection);
-                if (room?.Count == 0) rooms.Remove(room.Id);
+                if (room?.Count == 0) _ = room.TriggerSelfDestruct(rooms);
                 return;
             }
 
@@ -77,7 +78,7 @@ app.Map("/ws", async context =>
                 //     }
                 // }
                 connection.DisconnectFromRoom();
-                if (room?.Count == 0) rooms.Remove(room.Id);
+                if (room?.Count == 0) room.TriggerSelfDestruct(rooms);
 
                 room = new Room(rooms);
                 await room.Connect(connection);
@@ -89,13 +90,19 @@ app.Map("/ws", async context =>
             {
                 var roomCode = msg.Split(':')[1];
 
-                if (roomCode.Length != 4 || !rooms.TryGetValue(roomCode, out room))
+                if (roomCode.Length != 4 || !rooms.TryGetValue(roomCode, out var roomFound))
                 {
                     await SocketSendAsync(socket, CreateOutMsg("join_room_failed", "Not Found"));
                     continue;
                 }
 
-                connection.Room = await room.Connect(connection) ? room : null;
+                if (await roomFound.Connect(connection))
+                {
+                    connection.DisconnectFromRoom();
+                    if (room?.Count == 0) _ = room.TriggerSelfDestruct(rooms);
+                    room = roomFound;
+                    connection.Room = roomFound;
+                }
                 continue;
             }
 

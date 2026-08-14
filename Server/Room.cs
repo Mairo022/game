@@ -8,6 +8,7 @@ public class Room
     public readonly string Id;
     Connection? _connectionFirst;
     Connection? _connectionSecond;
+    bool _isSelfDestructTriggered;
 
     State _state = new();
     
@@ -17,6 +18,17 @@ public class Room
         while (rooms.ContainsKey(Id));
         
         rooms.Add(Id, this);
+    }
+
+    public async Task TriggerSelfDestruct(Dictionary<string, Room> rooms)
+    {
+        if (_isSelfDestructTriggered) return;
+        _isSelfDestructTriggered = true;
+        
+        await Task.Delay(TimeSpan.FromSeconds(60));
+        if (Count != 0) return;
+        rooms.Remove(Id);
+        // Console.WriteLine($"Self-destructed room {Id}");
     }
 
     async Task SendSnapshots()
