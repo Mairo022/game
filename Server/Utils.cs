@@ -13,8 +13,10 @@ public static class Utils
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
     
-    public static async Task SocketSendAsync(WebSocket socket, string message)
+    public static async Task SocketSendAsync(WebSocket? socket, string message)
     {
+        if (socket is null || socket.State != WebSocketState.Open) return;
+        
         await socket.SendAsync(
             Encoding.UTF8.GetBytes(message),
             WebSocketMessageType.Text,
@@ -25,7 +27,7 @@ public static class Utils
     
     public static async Task SocketSendAsync(WebSocket? socket, byte[] message)
     {
-        if (socket is null) return;
+        if (socket is null || socket.State != WebSocketState.Open) return;
         
         Console.WriteLine($"Sending {message.Length} bytes");
         await socket.SendAsync(
