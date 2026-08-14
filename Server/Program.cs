@@ -41,14 +41,15 @@ app.Map("/ws", async context =>
                     WebSocketCloseStatus.MessageTooBig,
                     "Msg too large",
                     CancellationToken.None);
+
+                RemoveConnection(connection);
                 return;
             }
 
             if (result.MessageType == WebSocketMessageType.Close)
             {
                 Console.WriteLine("Connection lost");
-                connection.DisconnectFromRoom();
-                connections.Remove(connection.Id);
+                RemoveConnection(connection);
                 if (room?.Count == 0) rooms.Remove(room.Id);
                 return;
             }
@@ -81,23 +82,24 @@ app.Map("/ws", async context =>
                 room = new Room(rooms);
                 await room.Connect(connection);
                 connection.Room = room;
+                continue;
             }
-            else if (msg.StartsWith("join_room:"))
+            
+            if (msg.StartsWith("join_room:"))
             {
-                var roomCode = msg.Split(':')[1][..4];
+                var roomCode = msg.Split(':')[1];
 
-                if (!rooms.TryGetValue(roomCode, out room))
+                if (roomCode.Length != 4 || !rooms.TryGetValue(roomCode, out room))
                 {
                     await SocketSendAsync(socket, CreateOutMsg("join_room_failed", "Not Found"));
                     continue;
                 }
 
                 connection.Room = await room.Connect(connection) ? room : null;
+                continue;
             }
-            else
-            {
-                room?.HandleMessage(connection, msg);
-            }
+
+            room?.HandleMessage(connection, msg);
         }
     } 
     catch (Exception e)
@@ -106,12 +108,17 @@ app.Map("/ws", async context =>
         Console.Error.WriteLine($"[ERROR] Main loop failed:\n   {e}");
         Console.Error.WriteLine("Last message: " + Encoding.UTF8.GetString(buffer, 0, 128));
         Console.ResetColor();
-        
-        connection.DisconnectFromRoom();
-        connections.Remove(connection.Id);
+
+        RemoveConnection(connection);
         socket.Abort();
         socket.Dispose();
     }
 });
+
+void RemoveConnection(Connection connection)
+{
+    connection.DisconnectFromRoom();
+    connections.Remove(connection.Id);
+}
 
 app.Run();
