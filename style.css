@@ -416,6 +416,39 @@ button {
     font-size: 0;
 }
 
+#overlay {
+    position: absolute;
+    width: 700px;
+    height: 20dvh;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+    background-color: rgba(0,0,0,0.25);
+    border-radius: 12px;
+    z-index: 99;
+    place-self: center;
+    inset: 0;
+    margin-top: 32px;
+
+    .connecting:after {
+        content: "";
+        display: inline-block;
+        margin-left: 6px;
+        width: 36px;
+        aspect-ratio: 4;
+        background: radial-gradient(circle closest-side,#000 90%,#0000) 0/calc(100%/3) 100% space;
+        clip-path: inset(0 100% 0 0);
+        animation: loading_dots 1.5s steps(4) infinite;
+    }
+
+    &.ol-on {
+        display: flex;
+    }
+}
+
+@keyframes loading_dots {to{clip-path: inset(0 -34% 0 0)}}
+
 [data-value="-1"] { background:  transparent; }
 [data-value="D2"] { background-image: url("./img/D2.webp"); }
 [data-value="D3"] { background-image: url("./img/D3.webp"); }
@@ -581,5 +614,14 @@ button {
 
     .card_area {
         font-size: .8rem;
+    }
+
+    #overlay {
+        width: 80vw;
+        font-size: 1.25em;
+
+        .connecting:after {
+            width: 26px;
+        }
     }
 }

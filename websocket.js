@@ -12,7 +12,14 @@ import {
     state_move_card_mp,
     state_set_player_id
 } from "./state.js";
-import {render_all, render_turn_elements, render_opponent_cards, render_player_cards} from "./render.js";
+import {
+    render_all,
+    render_turn_elements,
+    render_opponent_cards,
+    render_player_cards,
+    render_overlay_message
+} from "./render.js";
+import {inp_room_id} from "./elements.js";
 
 let ws;
 
@@ -26,10 +33,15 @@ function ws_connect() {
     ws.onclose = ws_on_close;
     window.socket = ws;
     console.log(ws)
+
+    if (inp_room_id.placeholder[0] !== 'R') {
+        ws_join_room(inp_room_id.placeholder);
+    }
 }
 
 function ws_on_open() {
     ws_behaviour_set_player_connection(1);
+    render_overlay_message(null);
     console.log("WS connected");
     // Note: auto connect to room
     // ws_create_room();
@@ -144,6 +156,7 @@ function ws_on_close() {
     ws_behaviour_set_player_connection(0);
     console.log("WS closed");
     setTimeout(ws_connect, 2000);
+    render_overlay_message("Connecting to server");
 }
 
 function ws_on_error(err) {

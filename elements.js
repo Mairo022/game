@@ -39,6 +39,9 @@ const btn_end_turn = document.querySelector("#end_turn");
 
 const el_turn_indicator = document.querySelector("#indicator_turn");
 
+const el_overlay = document.querySelector("#overlay");
+const el_overlay_msg = document.querySelector("#overlay_msg");
+
 function create_ghost_card_auto_move(x, y, value) {
     const ghost = document.createElement("div");
     ghost.classList.add("card")
@@ -94,5 +97,7 @@ export {
     btn_start_sp,
     btn_get_snap,
     btn_end_turn,
-    el_turn_indicator
+    el_turn_indicator,
+    el_overlay,
+    el_overlay_msg,
 }

@@ -13,7 +13,7 @@ import {
     el_o_deck_left,
     el_o_deck,
     btn_end_turn,
-    el_turn_indicator
+    el_turn_indicator, el_overlay, el_overlay_msg
 } from "./elements.js";
 import {is_valid_turn_end} from "./validation.js";
 
@@ -127,6 +127,20 @@ function render_turn_elements(state) {
     btn_end_turn.disabled = !(state.player_id === state.turn_player_id && is_valid_turn_end(state))
 }
 
+function render_overlay_message(message) {
+    if (message === null) {
+        el_overlay.classList.remove("ol-on");
+        el_overlay_msg.textContent = "";
+        el_overlay_msg.classList.remove("connecting");
+        return;
+    }
+    el_overlay.classList.add("ol-on");
+    el_overlay_msg.textContent = message;
+
+    if (message.startsWith("Connecting"))
+        el_overlay_msg.classList.add("connecting");
+}
+
 function render_all(state) {
     render_player_cards(state);
     render_opponent_cards(state);
@@ -141,5 +155,6 @@ export {
     render_piles,
     render_stacks,
     render_all,
-    render_turn_elements
+    render_turn_elements,
+    render_overlay_message
 }
