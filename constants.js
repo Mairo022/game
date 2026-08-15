@@ -1,3 +1,5 @@
+const WS_ADDR = "ws://127.0.0.1:5005/ws"
+
 const DECK_SIZE = 52;
 const SUITS = ['H', 'D', 'C', 'S']
 const RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
@@ -49,6 +51,7 @@ const card_width = 100;
 const card_overlap = 75;
 
 export {
+    WS_ADDR,
     DECK_SIZE,
     SUITS,
     RANKS,

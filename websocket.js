@@ -20,13 +20,14 @@ import {
     render_overlay_message
 } from "./render.js";
 import {inp_room_id} from "./elements.js";
+import {WS_ADDR} from "./constants.js";
 
 let ws;
 
 ws_connect();
 
 function ws_connect() {
-    ws = new WebSocket("ws://127.0.0.1:5005/ws");
+    ws = new WebSocket(WS_ADDR);
     ws.onopen = ws_on_open;
     ws.onmessage = ws_on_message;
     ws.onerror = ws_on_error;
