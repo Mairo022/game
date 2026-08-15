@@ -5,11 +5,11 @@ import {
     ws_behaviour_set_room
 } from "./index.js";
 import {
+    reset_state,
     state,
     state_apply_snapshot,
     state_end_turn,
     state_init_deck_owners,
-    state_move_card_mp,
     state_set_player_id
 } from "./state.js";
 import {
@@ -17,7 +17,8 @@ import {
     render_turn_elements,
     render_opponent_cards,
     render_player_cards,
-    render_overlay_message
+    render_overlay_message,
+    render_overlay_message_timed
 } from "./render.js";
 import {inp_room_id} from "./elements.js";
 import {WS_ADDR} from "./constants.js";
@@ -141,7 +142,8 @@ function ws_on_message(event) {
     }
 
     if (msg.Type === "join_room_failed") {
-        console.error("Failed to join room:", event.Data);
+        render_overlay_message_timed("Failed to join room: " + msg.Data)
+        console.error("Failed to join room:", msg.Data);
     }
 
     if (msg.Type === "start") {
@@ -154,10 +156,12 @@ function ws_on_message(event) {
 }
 
 function ws_on_close() {
-    ws_behaviour_set_player_connection(0);
     console.log("WS closed");
-    setTimeout(ws_connect, 2000);
+    ws_behaviour_set_player_connection(0);
+    reset_state();
+    render_all(state);
     render_overlay_message("Connecting to server");
+    setTimeout(ws_connect, 2000);
 }
 
 function ws_on_error(err) {

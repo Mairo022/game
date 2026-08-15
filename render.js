@@ -127,6 +127,20 @@ function render_turn_elements(state) {
     btn_end_turn.disabled = !(state.player_id === state.turn_player_id && is_valid_turn_end(state))
 }
 
+let overlay_timer = null;
+
+function render_overlay_message_timed(message, time_ms = 1500) {
+    if (overlay_timer) clearTimeout(overlay_timer);
+
+    el_overlay.classList.add("ol-on");
+    el_overlay_msg.textContent = message;
+
+    overlay_timer = setTimeout(() => {
+        el_overlay.classList.remove("ol-on");
+        el_overlay_msg.textContent = "";
+    }, time_ms)
+}
+
 function render_overlay_message(message) {
     if (message === null) {
         el_overlay.classList.remove("ol-on");
@@ -156,5 +170,6 @@ export {
     render_stacks,
     render_all,
     render_turn_elements,
-    render_overlay_message
+    render_overlay_message,
+    render_overlay_message_timed
 }
