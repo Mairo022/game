@@ -7,6 +7,9 @@
     --root-bg: hsl(20, 4%, 11%);
     --card-width: 115px;
     --card-height: 172px;
+    --card-overlap: -74px;
+    --pile-margin: 6px;
+    --field-columns-gap: 2.5em;
 }
 
 * {
@@ -150,7 +153,7 @@ button {
     width: 80px;
     height: 160px;
     left:0;
-    top: 14px;
+    top: 20px;
     display: flex;
     align-items: center;
     justify-content: right;
@@ -198,7 +201,7 @@ button {
     display: flex;
     flex-wrap: nowrap;
     justify-content: center;
-    gap: 2.5em;
+    gap: var(--field-columns-gap);
 }
 
 .card_area {
@@ -371,7 +374,7 @@ button {
     justify-content: flex-start;
     flex-direction: row-reverse;
     position: relative;
-    margin-right: 12px;
+    margin-right: var(--pile-margin);
 
     .card:last-child {
         margin-left: -60px;
@@ -379,7 +382,7 @@ button {
     }
 
     .card:not(:first-child) {
-        margin-right: -75px;
+        margin-right: var(--card-overlap);
         z-index: 90;
     }
 
@@ -393,7 +396,7 @@ button {
     justify-content: flex-start;
     flex-direction: row;
     position: relative;
-    margin-left: 12px;
+    margin-left: var(--pile-margin);
 
     .card:last-child {
         margin-right: -60px;
@@ -401,7 +404,7 @@ button {
     }
 
     .card:not(:first-child) {
-        margin-left: -75px;
+        margin-left: var(--card-overlap);
         z-index: 90;
     }
 
@@ -415,6 +418,15 @@ button {
     background-size: 100% 100%;
     border: 1px solid #8d8d8d;
     font-size: 0;
+}
+
+/* Transitions */
+
+.card, .pile:before, .stack, .stack:before {
+    transition: width .4s ease, height .4s ease;
+}
+.player_cards, .game_field_row {
+    transition: gap .4s ease;
 }
 
 #overlay {
@@ -508,42 +520,66 @@ button {
 [data-value="SK"] { background-image: url("./img/SK.webp"); }
 [data-value="SA"] { background-image: url("./img/SA.webp"); }
 
-@media (max-width: 550px) {
+
+@media (max-width: 1550px) {
     :root {
-        --border-radius: 2px;
-        --shadow: 0 0 4px hsla(0, 0%, 40%, 0.5);
-        --shadow-hover: 0 0 6px hsla(0, 0%, 40%, 0.5);
-        --root-bg: hsl(20, 4%, 11%);
-        --card-width: 57px;
-        --card-height: 81px;
+        --pile-margin: 12px;
+        --card-overlap: -85px;
     }
 
-    #game {
-        position: relative;
-        display: grid;
-        grid-template-rows: auto 1fr auto;
-        height: 100dvh;
-        max-height: 100dvh;
+    .game_field_row {
+        gap: 0.5em;
+    }
+}
+
+@media (max-width: 1250px) {
+    :root {
+        --card-width: 79px;
+        --card-height: 118px;
+        --card-overlap: -62px;
+        --pile-margin: 6px;
+        --field-columns-gap: 0.25em;
+    }
+
+    .player_cards, .game_field_row {
+        gap: var(--field-columns-gap);
+    }
+
+    .player_cards {
+        padding: 1.5em;
+    }
+
+    #end_turn {
+        right: 5%;
+        width: 80px;
+        height: 150px;
+        top: 10px;
+    }
+
+    #indicator_box {
+        top: 2px;
+        display: flex;
+        align-items: center;
+        justify-content: right;
+    }
+}
+
+@media (max-width: 750px) {
+    :root {
+        --card-width: 49px;
+        --card-height: 73px;
+        --card-overlap: -40px;
+        --field-columns-gap: 0em;
+        --pile-margin: 2px;
     }
 
     .connection {
         position: absolute;
         top: 10px;
         left: 10px;
-        display: flex;
-        flex-direction: column;
-        place-items: center;
-        gap: 8px;
-        z-index: 9;
     }
 
-    button {
-        font-size: .6rem;
-        padding: 6px 10px;
-        width: 70px;
-    }
-
-    #input_room_id {
+    button, #input_room_id {
         font-size: .6rem;
         padding: 6px 10px;
         width: 70px;
@@ -558,38 +594,16 @@ button {
 
     #game_field, .player_cards {
         place-content: center;
-        padding: .5em;
+        padding: 1em;
+        margin: 2em;
     }
 
-    .pile_left {
-        margin-right: 2px;
-
-        .card:last-child {
-            margin-left: -36px;
-        }
-
-        .card:not(:first-child) {
-            margin-right: -46px;
-        }
-    }
-
-    .pile_right {
-        margin-left: 2px;
-
-        .card:last-child {
-            margin-right: -36px;
-        }
-
-        .card:not(:first-child) {
-            margin-left: -46px;
-        }
-    }
-
-    .player_cards, .game_field_row {
-        display: flex;
-        flex-wrap: nowrap;
-        justify-content: center;
+    .game_field_row {
         gap: 0;
+    }
+
+    .player_cards {
+        gap: 8px;
     }
 
     #end_turn {

@@ -1,5 +1,6 @@
-import {card_overlap, card_width, OWNERS, rank_order, RANKS, suit_values, SUITS} from "./constants.js";
+import {OWNERS, rank_order, RANKS, suit_values, SUITS} from "./constants.js";
 import {state} from "./state.js";
+import {card_overlap, card_width} from "./index.js";
 
 function create_card_obj(card) {
     if (!card) return null;

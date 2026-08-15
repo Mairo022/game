@@ -47,9 +47,6 @@ const TARGETS = {
     opponent_reserve: 4,
 }
 
-const card_width = 115;
-const card_overlap = 75;
-
 export {
     WS_ADDR,
     DECK_SIZE,
@@ -60,7 +57,5 @@ export {
     stack_names,
     rank_order,
     suit_values,
-    TARGETS,
-    card_width,
-    card_overlap
+    TARGETS
 }

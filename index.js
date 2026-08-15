@@ -17,6 +17,43 @@ import {create_move_obj, get_coordinates_for_move} from "./utils.js";
 import {ws_create_room, ws_end_turn, ws_get_snap, ws_join_room, ws_send, ws_send_move} from "./websocket.js";
 import {on_card_pointer_down, on_deck_click, on_pile_pointer_down} from "./events.js";
 
+let card_width = 115;
+let card_overlap = 75;
+
+const mobile = window.matchMedia("(max-width: 750px)");
+const tablet = window.matchMedia("(min-width: 751px) and (max-width: 1250px)");
+const desktop = window.matchMedia("(min-width: 1251px) and (max-width: 1550px)");
+const desktop_small = window.matchMedia("(min-width: 1551px)");
+
+mobile.addEventListener("change", handle_mobile_screen);
+tablet.addEventListener("change", handle_tablet_screen);
+desktop.addEventListener("change", handle_desktop_screen);
+desktop_small.addEventListener("change", handle_desktop_small_screen);
+
+function handle_mobile_screen(e) {
+    if (!e.matches) return;
+    card_width = 49;
+    card_overlap = 40;
+}
+
+function handle_tablet_screen(e) {
+    if (!e.matches) return;
+    card_width = 78;
+    card_overlap = 62;
+}
+
+function handle_desktop_screen(e) {
+    if (!e.matches) return;
+    card_width = 115;
+    card_overlap = 74;
+}
+
+function handle_desktop_small_screen(e) {
+    if (!e.matches) return;
+    card_width = 115;
+    card_overlap = 85;
+}
+
 btn_end_turn.addEventListener("click", _ => {
     console.log("end_turn clicked", state);
 
@@ -163,5 +200,7 @@ export {
     ws_behaviour_set_room,
     handle_card_drop,
     handle_game_start,
-    socket_behaviour_auto_move_card
+    socket_behaviour_auto_move_card,
+    card_width,
+    card_overlap
 }
