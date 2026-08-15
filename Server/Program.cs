@@ -1,5 +1,4 @@
-﻿using static Server.Utils;
-using static Server.Heartbeat;
+﻿using static Server.Heartbeat;
 using System.Net.WebSockets;
 using System.Text;
 using Server;
@@ -9,14 +8,14 @@ builder.WebHost.UseUrls("http://127.0.0.1:5005");
 var app = builder.Build();
 
 var connections = new Dictionary<string, Connection>();
-var rooms = new Dictionary<string, Room>();
+var roomsHandler = new RoomsHandler();
 
 app.UseWebSockets();
 _ = Task.Run(() => HeartbeatLoop(connections, TimeSpan.FromSeconds(15)));
 
 app.Map("/ws", async context =>
 {
-    // Console.WriteLine($"Rooms count: {rooms.Count}");
+    // Console.WriteLine($"Rooms count: {roomsHandler.RoomsCount}");
     var socket = await context.WebSockets.AcceptWebSocketAsync();
     var connection = new Connection(socket);
     Room? room = null;
@@ -43,15 +42,15 @@ app.Map("/ws", async context =>
                     "Msg too large",
                     CancellationToken.None);
 
-                RemoveConnection(connection);
+                roomsHandler.OnDisconnect(connection, room);
+                connections.Remove(connection.Id);
                 return;
             }
 
             if (result.MessageType == WebSocketMessageType.Close)
             {
-                // Console.WriteLine("Connection lost");
-                RemoveConnection(connection);
-                if (room?.Count == 0) _ = room.TriggerSelfDestruct(rooms);
+                roomsHandler.OnDisconnect(connection, room);
+                connections.Remove(connection.Id);
                 return;
             }
 
@@ -63,7 +62,7 @@ app.Map("/ws", async context =>
                 continue;
             }
 
-            // Console.WriteLine($@"Received {msg}");
+            Console.WriteLine($@"Received {msg}");
 
             if (msg.Equals("create_room"))
             {
@@ -77,32 +76,19 @@ app.Map("/ws", async context =>
                 //         continue;
                 //     }
                 // }
-                connection.DisconnectFromRoom();
-                if (room?.Count == 0) room.TriggerSelfDestruct(rooms);
-
-                room = new Room(rooms);
-                await room.Connect(connection);
+                
+                room = await roomsHandler.OnCreateRoom(connection, room);
                 connection.Room = room;
+                Console.WriteLine($"Created_room: {room?.Id}");
+                
                 continue;
             }
             
             if (msg.StartsWith("join_room:"))
             {
-                var roomCode = msg.Split(':')[1];
-
-                if (roomCode.Length != 4 || !rooms.TryGetValue(roomCode, out var roomFound))
-                {
-                    await SocketSendAsync(socket, CreateOutMsg("join_room_failed", "Not Found"));
-                    continue;
-                }
-
-                if (await roomFound.Connect(connection))
-                {
-                    connection.DisconnectFromRoom();
-                    if (room?.Count == 0) _ = room.TriggerSelfDestruct(rooms);
-                    room = roomFound;
-                    connection.Room = roomFound;
-                }
+                var joinRoomId = msg.Split(':')[1];
+                room = await roomsHandler.OnJoinRoom(connection, room, socket, joinRoomId);
+                connection.Room = room;
                 continue;
             }
 
@@ -115,17 +101,12 @@ app.Map("/ws", async context =>
         Console.Error.WriteLine($"[ERROR] Main loop failed:\n   {e}");
         Console.Error.WriteLine("Last message: " + Encoding.UTF8.GetString(buffer, 0, 128));
         Console.ResetColor();
-
-        RemoveConnection(connection);
+        
+        roomsHandler.OnDisconnect(connection, room);
+        connections.Remove(connection.Id);
         socket.Abort();
         socket.Dispose();
     }
 });
-
-void RemoveConnection(Connection connection)
-{
-    connection.DisconnectFromRoom();
-    connections.Remove(connection.Id);
-}
 
 app.Run();
