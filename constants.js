@@ -47,7 +47,7 @@ const TARGETS = {
     opponent_reserve: 4,
 }
 
-const card_width = 100;
+const card_width = 115;
 const card_overlap = 75;
 
 export {

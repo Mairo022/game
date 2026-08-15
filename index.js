@@ -7,7 +7,7 @@ import {
     state_move_card, state_move_card_mp,
 } from "./state.js";
 import {
-    btn_create_room, btn_end_turn, btn_get_snap, btn_join_room, btn_start_sp,
+    btn_create_room, btn_end_turn, btn_fix_game, btn_join_room, btn_start_sp,
     create_ghost_card_auto_move,
     el_player_card_area, el_player_deck_area,
     el_player_reserve, el_player_ws_status,
@@ -27,8 +27,10 @@ btn_end_turn.addEventListener("click", _ => {
     render_turn_elements(state);
 })
 
-btn_get_snap.addEventListener("click", _ => {
+btn_fix_game.addEventListener("click", _ => {
     ws_get_snap();
+    document.querySelectorAll(".ghost")
+        .forEach(el => {el.remove()});
 })
 
 btn_start_sp.addEventListener("click", (e) => {

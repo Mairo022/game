@@ -210,6 +210,7 @@ button {
 
 .cards_left {
     height: 24px;
+    user-select: none;
 }
 
 .pickable:hover {
@@ -426,10 +427,11 @@ button {
     font-size: 2em;
     background-color: rgba(0,0,0,0.25);
     border-radius: 12px;
-    z-index: 99;
+    z-index: 999;
     place-self: center;
     inset: 0;
     margin-top: 32px;
+    user-select: none;
 
     .connecting:after {
         content: "";

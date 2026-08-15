@@ -34,7 +34,7 @@ const inp_room_id = document.querySelector("#input_room_id");
 const btn_join_room = document.querySelector("#join_room");
 
 const btn_start_sp = document.querySelector("#start_sp");
-const btn_get_snap = document.querySelector("#get_snap");
+const btn_fix_game = document.querySelector("#get_snap");
 const btn_end_turn = document.querySelector("#end_turn");
 
 const el_turn_indicator = document.querySelector("#indicator_turn");
@@ -61,6 +61,9 @@ function create_ghost_card_manual_move(card, position) {
     ghost.offset_y = position.e_y - position.r_t;
 
     ghost.el = card.cloneNode(true);
+    ghost.el.id = "";
+    ghost.el.classList.add("ghost");
+    ghost.el.classList.remove("pickable");
     ghost.el.style.position = "fixed";
     ghost.el.style.left = position.r_l + "px";
     ghost.el.style.top = position.r_t + "px";
@@ -95,7 +98,7 @@ export {
     inp_room_id,
     btn_join_room,
     btn_start_sp,
-    btn_get_snap,
+    btn_fix_game,
     btn_end_turn,
     el_turn_indicator,
     el_overlay,
