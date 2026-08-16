@@ -8,7 +8,7 @@ import {
 } from "./state.js";
 import {
     btn_create_room, btn_end_turn, btn_fix_game, btn_join_room, btn_start_sp,
-    create_ghost_card_auto_move,
+    create_ghost_card_auto_move, el_opponent_ws_status,
     el_player_card_area, el_player_deck_area,
     el_player_reserve, el_player_ws_status,
     inp_room_id
@@ -93,6 +93,10 @@ function ws_behaviour_set_room(room_id) {
 
 function ws_behaviour_set_player_connection(is_connected) {
     el_player_ws_status.dataset.connected = is_connected;
+}
+
+function ws_behaviour_set_opponent_connection(is_connected) {
+    el_opponent_ws_status.dataset.connected = is_connected;
 }
 
 function ws_behaviour_draw_card_player(card) {
@@ -196,6 +200,7 @@ document.addEventListener("keyup", event => {
 })
 
 export {
+    ws_behaviour_set_opponent_connection,
     ws_behaviour_set_player_connection,
     ws_behaviour_set_room,
     handle_card_drop,

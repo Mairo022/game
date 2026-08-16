@@ -34,6 +34,7 @@ public class RoomsHandler
         
         if (await roomFound.Connect(connection))
         {
+            _ = roomFound.SendPlayerJoined(connection);
             connection.DisconnectFromRoom();
             if (room?.Count == 0) _ = room.TriggerSelfDestruct(_rooms);
             return roomFound;

@@ -14,6 +14,7 @@ public class Connection(WebSocket socket)
     {
         if (Room == null) return;
         Room.Disconnect(this);
+        _ = Room.SendPlayerDisconnected();
         Room = null;
     }
 }

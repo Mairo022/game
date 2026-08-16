@@ -45,6 +45,19 @@ public class Room
         await SocketSendAsync(conn.Socket, CreateOutMsg("snap", ref snap));
     }
 
+    public async Task SendPlayerJoined(Connection conn)
+    {
+        var connTarget = GetOtherConnection(conn);
+        if (connTarget is null) return;
+        await SocketSendAsync(connTarget.Socket, CreateOutMsg("op_joined", ""));
+    }
+
+    public async Task SendPlayerDisconnected()
+    {
+        var connTarget = _connectionFirst ?? _connectionSecond;
+        if (connTarget is not null) await SocketSendAsync(connTarget.Socket, CreateOutMsg("op_left", ""));
+    }
+
     public async Task HandleMessage(Connection conn, string json)
     {
         try
@@ -81,7 +94,7 @@ public class Room
 
                     if (move is null) break;
                     if (conn.TurnId == 1) ChangeMovePov(ref move);
-                    Console.WriteLine(move);
+                    // Console.WriteLine(move);
                     
                     if (!Validation.IsValidMove(move, ref _state.GameState))
                     {
@@ -197,7 +210,7 @@ public class Room
             return false;
         }
 
-        var joinedRoom = new JoinedRoom{ Id = Id, PlayerId = connection.TurnId };
+        var joinedRoom = new JoinedRoom{ Id = Id, PlayerId = connection.TurnId, OpponentIn = Count - 1};
         await SocketSendAsync(connection.Socket, CreateOutMsg("joined_room", joinedRoom));
         
         // Later to Start event
@@ -224,4 +237,5 @@ public record JoinedRoom
 {
     public required string Id { get; init; }
     public required int PlayerId { get; init; }
+    public required int OpponentIn { get; init; }
 }

@@ -15,7 +15,10 @@
     <section id="game">
         <div class="connection">
             <div id="dot"></div>
-            <div id="player_ws_status" data-connected="false"></div>
+            <div class="ws_statuses">
+                <div id="player_ws_status" data-connected="false"></div>
+                <div id="opponent_ws_status" data-connected="false"></div>
+            </div>
             <input type="text" id="input_room_id" placeholder="Room ID" maxlength="4"/>
             <button id="join_room" disabled>Join room</button>
             <button id="create_room">New Room</button>

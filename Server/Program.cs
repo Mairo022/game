@@ -31,7 +31,7 @@ app.Map("/ws", async context =>
 
         connections.Add(connection.Id, connection);
 
-        while (socket.State == WebSocketState.Open)
+        while (WebSocketState.Open == socket.State)
         {
             var result = await socket.ReceiveAsync(buffer, CancellationToken.None);
 
@@ -47,7 +47,7 @@ app.Map("/ws", async context =>
                 return;
             }
 
-            if (result.MessageType == WebSocketMessageType.Close)
+            if (WebSocketMessageType.Close == result.MessageType)
             {
                 roomsHandler.OnDisconnect(connection, room);
                 connections.Remove(connection.Id);
@@ -87,8 +87,12 @@ app.Map("/ws", async context =>
             if (msg.StartsWith("join_room:"))
             {
                 var joinRoomId = msg.Split(':')[1];
-                room = await roomsHandler.OnJoinRoom(connection, room, socket, joinRoomId);
-                connection.Room = room;
+                var roomJoined = await roomsHandler.OnJoinRoom(connection, room, socket, joinRoomId);
+                if (roomJoined is not null)
+                {
+                    room = roomJoined;
+                    connection.Room = room;
+                }
                 continue;
             }
 

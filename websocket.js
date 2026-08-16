@@ -1,6 +1,7 @@
 import {
     handle_game_start,
     socket_behaviour_auto_move_card,
+    ws_behaviour_set_opponent_connection,
     ws_behaviour_set_player_connection,
     ws_behaviour_set_room
 } from "./index.js";
@@ -135,9 +136,20 @@ function ws_on_message(event) {
         return;
     }
 
+    if (msg.Type === "op_joined") {
+        ws_behaviour_set_opponent_connection(1);
+        return;
+    }
+
+    if (msg.Type === "op_left") {
+        ws_behaviour_set_opponent_connection(0);
+        return;
+    }
+
     if (msg.Type === "joined_room") {
         ws_behaviour_set_room(msg.Data.Id);
         state_set_player_id(msg.Data.PlayerId);
+        ws_behaviour_set_opponent_connection(msg.Data.OpponentIn);
         return;
     }
 
@@ -158,6 +170,7 @@ function ws_on_message(event) {
 function ws_on_close() {
     console.log("WS closed");
     ws_behaviour_set_player_connection(0);
+    ws_behaviour_set_opponent_connection(0);
     reset_state();
     render_all(state);
     render_overlay_message("Connecting to server");
@@ -166,6 +179,7 @@ function ws_on_close() {
 
 function ws_on_error(err) {
     ws_behaviour_set_player_connection(-1);
+    ws_behaviour_set_opponent_connection(-1);
     console.error("WS error", err);
 }
 

@@ -30,6 +30,7 @@ const el_o_deck_left = el_opponent.querySelector("#o_deck_area > .cards_left");
 
 const btn_create_room = document.querySelector("#create_room");
 const el_player_ws_status = document.querySelector("#player_ws_status");
+const el_opponent_ws_status = document.querySelector("#opponent_ws_status");
 const inp_room_id = document.querySelector("#input_room_id");
 const btn_join_room = document.querySelector("#join_room");
 
@@ -95,6 +96,7 @@ export {
     el_o_reserve_left,
     btn_create_room,
     el_player_ws_status,
+    el_opponent_ws_status,
     inp_room_id,
     btn_join_room,
     btn_start_sp,
