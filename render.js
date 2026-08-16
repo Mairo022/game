@@ -81,6 +81,7 @@ function render_stacks(state) {
         const last_card = stack.at(-1);
 
         if (!last_card) {
+            el_stack.classList.remove("card-up");
             delete el_stack.dataset.value;
             continue;
         }
