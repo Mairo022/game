@@ -54,6 +54,11 @@ function handle_desktop_small_screen(e) {
     card_overlap = 85;
 }
 
+handle_mobile_screen(mobile)
+handle_tablet_screen(tablet)
+handle_desktop_screen(desktop)
+handle_desktop_small_screen(desktop_small)
+
 btn_end_turn.addEventListener("click", _ => {
     console.log("end_turn clicked", state);
 
@@ -97,6 +102,10 @@ function ws_behaviour_set_player_connection(is_connected) {
 
 function ws_behaviour_set_opponent_connection(is_connected) {
     el_opponent_ws_status.dataset.connected = is_connected;
+}
+
+function ws_behaviour_set_fix_btn(isEnabled) {
+    btn_fix_game.disabled = !isEnabled;
 }
 
 function ws_behaviour_draw_card_player(card) {
@@ -202,6 +211,7 @@ document.addEventListener("keyup", event => {
 export {
     ws_behaviour_set_opponent_connection,
     ws_behaviour_set_player_connection,
+    ws_behaviour_set_fix_btn,
     ws_behaviour_set_room,
     handle_card_drop,
     handle_game_start,

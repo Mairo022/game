@@ -140,9 +140,14 @@ button {
 
 /* Play area */
 
-#game_field, .player_cards {
+#game_field {
     place-content: center;
     padding: .5em 80px;
+}
+
+.player_area {
+    place-content: center;
+    padding: 0;
 }
 
 .game_field_rows {
@@ -163,57 +168,53 @@ button {
 }
 
 #indicator_box {
-    position: absolute;
-    right: 0;
     z-index: 55;
     width: 80px;
-    height: 160px;
-    left:0;
-    top: 20px;
+    height: var(--card-height);
     display: flex;
     align-items: center;
-    justify-content: right;
+    justify-content: end;
 
     #indicator_turn {
-        height: 24px;
-        width: 24px;
-        background: #7dcd77;
-        border: 1px solid hsl(0 0% 54%);
+        height: calc(var(--card-height) - 24px);
+        width: 12px;
+        background: hsl(114 50% 64%);
+        border: 1px solid hsl(0 0% 52%);
         border-radius: 4px;
+        box-shadow: #00000018 0 0 2px;
 
         &.turn-opponent {
-            background: hsl(0 0% 55%);
+            background-color: hsl(none 0% 64%);
             border: 1px solid hsl(0 0% 48%);
         }
     }
 }
 
 #end_turn {
-    position: absolute;
-    right: 0;
-    z-index: 55;
-    width: 80px;
-    height: 160px;
+    width: 120px;
+    height: var(--card-height);
     top: 14px;
-    box-shadow: #00000022 0 0 4px 0px;
-    border: 2px solid hsl(211 26% 50% / 0.90);
-    background-color: hsl(180 4% 96% / 0.95);
+    box-shadow: #00000018 0 0 2px 0;
+    border: 2px solid hsl(211 22% 50% / 0.85);
+    background-color: hsl(180 4% 100% / 0.9);
     color: hsl(0 0% 8% / 0.96);
-    border-radius: 30px;
+    border-radius: 12px;
+    box-sizing: border-box;
 
     &:enabled:hover {
-        box-shadow: #00000022 0 0 10px 2px;
-        border: 2px solid hsl(211 26% 46% / 0.90);
-        background-color: hsl(180 4% 96% / 0.95);
+        box-shadow: #00000018 0 0 3px 2px;
+        border: 2px solid hsl(211 22% 45% / 0.85);
+        background-color: hsl(180 4% 100% / 0.94);
         cursor: pointer;
     }
 
     &:disabled {
-        background-color: hsl(180 4% 92% / 0.95);
+        border: 2px solid hsl(211 18% 50% / 0.85);
+        background-color: hsl(180 4% 100% / 0.74);
     }
 }
 
-.player_cards, .game_field_row {
+.player_area, .game_field_row {
     display: flex;
     flex-wrap: nowrap;
     justify-content: center;
@@ -441,7 +442,7 @@ button {
 .card, .pile:before, .stack, .stack:before {
     transition: width .4s ease, height .4s ease;
 }
-.player_cards, .game_field_row {
+.player_area, .game_field_row {
     transition: gap .4s ease;
 }
 
@@ -557,26 +558,24 @@ button {
         --field-columns-gap: 0.25em;
     }
 
-    .player_cards, .game_field_row {
+    .player_area, .game_field_row {
         gap: var(--field-columns-gap);
     }
 
-    .player_cards {
-        padding: 1.5em;
+    .player_area {
+        padding: 2.5em;
     }
 
     #end_turn {
         right: 5%;
-        width: 80px;
-        height: 150px;
+        width: 60px;
         top: 10px;
+        margin-left: 18px;
     }
 
     #indicator_box {
-        top: 2px;
-        display: flex;
-        align-items: center;
-        justify-content: right;
+        width: 60px;
+        margin-right: 18px;
     }
 }
 
@@ -602,7 +601,7 @@ button {
         width: 70px;
     }
 
-    #game_field, .player_cards {
+    #game_field, .player_area {
         place-content: center;
         padding: 1em;
         margin: 2em;
@@ -612,30 +611,21 @@ button {
         gap: 0;
     }
 
-    .player_cards {
-        gap: 8px;
+    .player_area {
+        gap: 2px;
     }
 
     #end_turn {
         font-size: 12px;
-        right: 5%;
         width: 60px;
-        height: 80px;
-        top: 10px;
+        margin-left: auto;
+        margin-right: 20px;
     }
 
     #indicator_box {
-        width: 80px;
-        height: 100px;
-        top: 0;
-        display: flex;
-        align-items: center;
-        justify-content: right;
-
-        #indicator_turn {
-            height: 16px;
-            width: 16px;
-        }
+        margin-left: 20px;
+        margin-right: auto;
+        width: 60px;
     }
 
     .card_area {

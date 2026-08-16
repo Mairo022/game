@@ -1,6 +1,6 @@
 import {
     handle_game_start,
-    socket_behaviour_auto_move_card,
+    socket_behaviour_auto_move_card, ws_behaviour_set_fix_btn,
     ws_behaviour_set_opponent_connection,
     ws_behaviour_set_player_connection,
     ws_behaviour_set_room
@@ -72,6 +72,7 @@ function ws_on_message(event) {
     if (msg.Type === "draw_pile") {
         state.player_pile[0] = msg.Data;
         render_player_cards(state);
+        return;
     }
 
     if (msg.Type === "draw_pile_op") {
@@ -116,6 +117,7 @@ function ws_on_message(event) {
     if (msg.Type === "draw_reserve") {
         state.player_reserve[0] = msg.Data;
         render_player_cards(state);
+        return;
     }
 
     if (msg.Type === "draw_reserve_op") {
@@ -148,6 +150,7 @@ function ws_on_message(event) {
 
     if (msg.Type === "joined_room") {
         ws_behaviour_set_room(msg.Data.Id);
+        ws_behaviour_set_fix_btn(true);
         state_set_player_id(msg.Data.PlayerId);
         ws_behaviour_set_opponent_connection(msg.Data.OpponentIn);
         return;
@@ -156,6 +159,7 @@ function ws_on_message(event) {
     if (msg.Type === "join_room_failed") {
         render_overlay_message_timed("Failed to join room: " + msg.Data)
         console.error("Failed to join room:", msg.Data);
+        return;
     }
 
     if (msg.Type === "start") {
@@ -171,6 +175,7 @@ function ws_on_close() {
     console.log("WS closed");
     ws_behaviour_set_player_connection(0);
     ws_behaviour_set_opponent_connection(0);
+    ws_behaviour_set_fix_btn(false);
     reset_state();
     render_all(state);
     render_overlay_message("Connecting to server");

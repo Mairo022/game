@@ -34,6 +34,13 @@ app.Map("/ws", async context =>
         while (WebSocketState.Open == socket.State)
         {
             var result = await socket.ReceiveAsync(buffer, CancellationToken.None);
+            
+            if (WebSocketMessageType.Close == result.MessageType)
+            {
+                roomsHandler.OnDisconnect(connection, room);
+                connections.Remove(connection.Id);
+                return;
+            }
 
             if (!result.EndOfMessage)
             {
@@ -42,13 +49,6 @@ app.Map("/ws", async context =>
                     "Msg too large",
                     CancellationToken.None);
 
-                roomsHandler.OnDisconnect(connection, room);
-                connections.Remove(connection.Id);
-                return;
-            }
-
-            if (WebSocketMessageType.Close == result.MessageType)
-            {
                 roomsHandler.OnDisconnect(connection, room);
                 connections.Remove(connection.Id);
                 return;
@@ -79,8 +79,6 @@ app.Map("/ws", async context =>
                 
                 room = await roomsHandler.OnCreateRoom(connection, room);
                 connection.Room = room;
-                Console.WriteLine($"Created_room: {room?.Id}");
-                
                 continue;
             }
             
