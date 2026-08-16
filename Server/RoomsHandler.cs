@@ -10,7 +10,6 @@ public class RoomsHandler
 
     public void OnDisconnect(Connection connection, Room? room)
     {
-        Console.WriteLine($"{connection.Id} has disconnected");
         connection.DisconnectFromRoom();
         if (room?.Count == 0) _ = room.TriggerSelfDestruct(_rooms);
     }
@@ -28,7 +27,7 @@ public class RoomsHandler
     {
         if (joinRoomId.Length != 4 || !_rooms.TryGetValue(joinRoomId, out var roomFound))
         {
-            await SocketSendAsync(socket, CreateOutMsg("join_room_failed", "Not Found"));
+            await SocketSendAsync(socket, CreateOutMsg("join_room_failed", "Not Found"), connection.Cts.Token);
             return null;
         }
         

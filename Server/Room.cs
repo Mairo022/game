@@ -25,10 +25,9 @@ public class Room
         if (_isSelfDestructTriggered) return;
         _isSelfDestructTriggered = true;
         
-        await Task.Delay(TimeSpan.FromSeconds(60));
+        await Task.Delay(TimeSpan.FromSeconds(120));
         if (Count != 0) return;
         rooms.Remove(Id);
-        // Console.WriteLine($"Self-destructed room {Id}");
     }
 
     async Task SendSnapshots()
@@ -42,20 +41,20 @@ public class Room
     async Task SendSnapshot(Connection conn)
     {
         var snap = _state.GetSnapshot(conn.TurnId);
-        await SocketSendAsync(conn.Socket, CreateOutMsg("snap", ref snap));
+        await SocketSendAsync(conn.Socket, CreateOutMsg("snap", ref snap), conn.Cts.Token);
     }
 
     public async Task SendPlayerJoined(Connection conn)
     {
         var connTarget = GetOtherConnection(conn);
         if (connTarget is null) return;
-        await SocketSendAsync(connTarget.Socket, CreateOutMsg("op_joined", ""));
+        await SocketSendAsync(connTarget.Socket, CreateOutMsg("op_joined", ""), conn.Cts.Token);
     }
 
     public async Task SendPlayerDisconnected()
     {
         var connTarget = _connectionFirst ?? _connectionSecond;
-        if (connTarget is not null) await SocketSendAsync(connTarget.Socket, CreateOutMsg("op_left", ""));
+        if (connTarget is not null) await SocketSendAsync(connTarget.Socket, CreateOutMsg("op_left", ""), connTarget.Cts.Token);
     }
 
     public async Task HandleMessage(Connection conn, string json)
@@ -64,7 +63,7 @@ public class Room
         {
             if (!TryParseJson(json, out var root, out var type))
             {
-                await SocketSendAsync(conn.Socket, "Unknown message");
+                await SocketSendAsync(conn.Socket, "Unknown message", conn.Cts.Token);
                 Console.WriteLine("Invalid json");
                 return;
             }
@@ -78,7 +77,7 @@ public class Room
             if (!Validation.IsPlayerTurn(conn, ref _state.GameState))
             {
                 Console.WriteLine("Not player turn");
-                await SocketSendAsync(conn.Socket, CreateOutMsg("wrong_turn", ""));
+                await SocketSendAsync(conn.Socket, CreateOutMsg("wrong_turn", ""), conn.Cts.Token);
                 return;
             }
 
@@ -99,7 +98,7 @@ public class Room
                     if (!Validation.IsValidMove(move, ref _state.GameState))
                     {
                         Console.WriteLine("Invalid move");
-                        await SocketSendAsync(conn.Socket, CreateOutMsg("move_failed", "Invalid move"));
+                        await SocketSendAsync(conn.Socket, CreateOutMsg("move_failed", "Invalid move"), conn.Cts.Token);
                         break;
                     }
                     
@@ -108,15 +107,15 @@ public class Room
                     var otherConn = GetOtherConnection(conn);
                     var moveOut = new MoveMessageOut{ Type=move.Type, Target = move.Target, Src = move.Src };
                     
-                    await SocketSendAsync(otherConn?.Socket, CreateOutMsg("move", moveOut));
+                    await SocketSendAsync(otherConn?.Socket, CreateOutMsg("move", moveOut), conn.Cts.Token);
 
                     if (move.Src.EndsWith("reserve")) // is player reserve
                     {
                         var card = _state.DrawReserveCard(conn.TurnId);
                         if (card is null) break;
                         
-                        await SocketSendAsync(otherConn?.Socket, CreateOutMsg("draw_reserve_op", card.Value.Name));
-                        await SocketSendAsync(conn.Socket, CreateOutMsg("draw_reserve", card.Value.Name));
+                        await SocketSendAsync(otherConn?.Socket, CreateOutMsg("draw_reserve_op", card.Value.Name), conn.Cts.Token);
+                        await SocketSendAsync(conn.Socket, CreateOutMsg("draw_reserve", card.Value.Name), conn.Cts.Token);
                     }
                     
                     if (move.Src.EndsWith("pile")) // is player pile
@@ -126,8 +125,8 @@ public class Room
                         var card = _state.GetPlayerPileCard(conn.TurnId);
                         if (card is null) break;
                         
-                        await SocketSendAsync(otherConn?.Socket, CreateOutMsg("draw_pile_op", card.Value.Name));
-                        await SocketSendAsync(conn.Socket, CreateOutMsg("draw_pile", card.Value.Name));
+                        await SocketSendAsync(otherConn?.Socket, CreateOutMsg("draw_pile_op", card.Value.Name), conn.Cts.Token);
+                        await SocketSendAsync(conn.Socket, CreateOutMsg("draw_pile", card.Value.Name), conn.Cts.Token);
                     }
                     
                     break;
@@ -137,14 +136,14 @@ public class Room
                 {
                     if (Validation.IsValidDrawCard(ref _state.GameState))
                     {
-                        await SocketSendAsync(conn.Socket, CreateOutMsg("draw_card_failed", "Already drew"));
+                        await SocketSendAsync(conn.Socket, CreateOutMsg("draw_card_failed", "Already drew"), conn.Cts.Token);
                         break;                        
                     }
                     
                     var card = _state.DrawCard(conn.TurnId);
                     if (card is null)
                     {
-                        await SocketSendAsync(conn.Socket, CreateOutMsg("draw_card_failed", "Deck empty"));
+                        await SocketSendAsync(conn.Socket, CreateOutMsg("draw_card_failed", "Deck empty"), conn.Cts.Token);
                         break;
                     }
 
@@ -153,8 +152,8 @@ public class Room
                     
                     _state.SetCardDrawn(true);
 
-                    await SocketSendAsync(conn.Socket, CreateOutMsg("draw_card", $@"{card.Value.Name},{nextDeckCardOwner}"));
-                    await SocketSendAsync(otherConn?.Socket, CreateOutMsg("draw_card_op", $@"{card.Value.Name},{nextDeckCardOwner}"));
+                    await SocketSendAsync(conn.Socket, CreateOutMsg("draw_card", $@"{card.Value.Name},{nextDeckCardOwner}"), conn.Cts.Token);
+                    await SocketSendAsync(otherConn?.Socket, CreateOutMsg("draw_card_op", $@"{card.Value.Name},{nextDeckCardOwner}"), conn.Cts.Token);
                     break;
                 }
 
@@ -162,12 +161,12 @@ public class Room
                 {
                     if (!Validation.IsValidTurnEnd(conn, ref _state.GameState))
                     {
-                        await SocketSendAsync(conn.Socket, CreateOutMsg("end_turn_failed", "Must draw card"));
+                        await SocketSendAsync(conn.Socket, CreateOutMsg("end_turn_failed", "Must draw card"), conn.Cts.Token);
                         break;
                     }
                     _state.ChangeTurn();
                     var otherConn = GetOtherConnection(conn);
-                    await SocketSendAsync(otherConn?.Socket, CreateOutMsg("end_turn_op", ""));
+                    await SocketSendAsync(otherConn?.Socket, CreateOutMsg("end_turn_op", ""), conn.Cts.Token);
                     break;
                 }
             }
@@ -206,16 +205,16 @@ public class Room
         }
         else
         {
-            await SocketSendAsync(connection.Socket, CreateOutMsg("join_room_failed", "Full"));
+            await SocketSendAsync(connection.Socket, CreateOutMsg("join_room_failed", "Full"), connection.Cts.Token);
             return false;
         }
 
         var joinedRoom = new JoinedRoom{ Id = Id, PlayerId = connection.TurnId, OpponentIn = Count - 1};
-        await SocketSendAsync(connection.Socket, CreateOutMsg("joined_room", joinedRoom));
+        await SocketSendAsync(connection.Socket, CreateOutMsg("joined_room", joinedRoom), connection.Cts.Token);
         
         // Later to Start event
         var snap = _state.GetSnapshot(connection.TurnId);
-        await SocketSendAsync(connection.Socket, CreateOutMsg("start", ref snap));
+        await SocketSendAsync(connection.Socket, CreateOutMsg("start", ref snap), connection.Cts.Token);
         
         return true;
     }

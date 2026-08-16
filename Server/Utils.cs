@@ -8,7 +8,7 @@ namespace Server;
 
 public static class Utils
 {
-    static Random _random = new Random();
+    static Random _random = new();
     
     public static string GenerateString(int length)
     {
@@ -23,7 +23,7 @@ public static class Utils
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
     
-    public static async Task SocketSendAsync(WebSocket? socket, string message)
+    public static async Task SocketSendAsync(WebSocket? socket, string message, CancellationToken ct)
     {
         if (socket is null || socket.State != WebSocketState.Open) return;
         
@@ -31,20 +31,20 @@ public static class Utils
             Encoding.UTF8.GetBytes(message),
             WebSocketMessageType.Text,
             true,
-            CancellationToken.None
+            ct
         );
     }
     
-    public static async Task SocketSendAsync(WebSocket? socket, byte[] message)
+    public static async Task SocketSendAsync(WebSocket? socket, byte[] message, CancellationToken ct)
     {
         if (socket is null || socket.State != WebSocketState.Open) return;
         
-        // Console.WriteLine($"Sending {message.Length} bytes");
+        Console.WriteLine($"Sending {message.Length} bytes");
         await socket.SendAsync(
             message,
             WebSocketMessageType.Text,
             true,
-            CancellationToken.None
+            ct
         );
     }
     

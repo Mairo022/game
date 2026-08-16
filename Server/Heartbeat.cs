@@ -10,55 +10,37 @@ public static class Heartbeat
     
     public static async Task HeartbeatLoop(Dictionary<string, Connection> connections, TimeSpan timespan)
     {
-        _pingInterval = timespan / 3;
-        
-        while (true)
+        try
         {
-            foreach (var kvp in connections)
-            {
-                var player = kvp.Value;
-                
-                if (DateTime.Now - player.LastSeen > timespan)
-                {
-                    Console.WriteLine("Player timed out.");
+            _pingInterval = timespan / 3;
 
-                    try
-                    {
-                        player.DisconnectFromRoom();
-                        connections.Remove(kvp.Key);
-                        
-                        if (player.Socket.State == WebSocketState.Open)
-                            await player.Socket.CloseAsync(
-                                WebSocketCloseStatus.NormalClosure,
-                                "Timeout",
-                                CancellationToken.None);
-                        
-                        player.Socket.Dispose();
-                    }
-                    catch {}
-                    continue;
-                }
-            
-                if (player.Socket.State == WebSocketState.Open)
+            while (true)
+            {
+                foreach (var player in connections.Values)
                 {
-                    try
+                    if (DateTime.Now - player.LastSeen > timespan)
+                    {
+                        player.Cts.Cancel();
+                        continue;
+                    }
+
+                    if (player.Socket.State == WebSocketState.Open)
                     {
                         await player.Socket.SendAsync(
                             _ping,
                             WebSocketMessageType.Text,
                             true,
-                            CancellationToken.None);
-                    }
-                    catch
-                    {
-                        player.DisconnectFromRoom();
-                        connections.Remove(kvp.Key);
-                        player.Socket.Dispose();
+                            player.Cts.Token);
                     }
                 }
+                await Task.Delay(_pingInterval);
             }
-
-            await Task.Delay(_pingInterval);
+        }
+        catch (Exception e)
+        {
+            Console.BackgroundColor = ConsoleColor.DarkRed;
+            Console.Error.WriteLine($"[ERROR] Heartbeat failed:\n   {e}");
+            Console.ResetColor();
         }
     }
 }
