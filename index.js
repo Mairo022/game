@@ -79,7 +79,7 @@ inp_room_id.addEventListener("keyup", _ => {
 })
 
 btn_join_room.addEventListener("click", _ => {
-    ws_join_room(inp_room_id.value);
+    ws_join_room(inp_room_id.value.toUpperCase());
 })
 
 btn_create_room.addEventListener("click", _ => {

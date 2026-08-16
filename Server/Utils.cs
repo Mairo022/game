@@ -8,6 +8,16 @@ namespace Server;
 
 public static class Utils
 {
+    static Random _random = new Random();
+    
+    public static string GenerateString(int length)
+    {
+        return new string(
+            Enumerable.Range(0, length)
+                .Select(_ => CHARS[_random.Next(CHARS.Length)])
+                .ToArray());
+    }
+    
     public static readonly JsonSerializerOptions JsonIgnoreNull = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
@@ -29,7 +39,7 @@ public static class Utils
     {
         if (socket is null || socket.State != WebSocketState.Open) return;
         
-        Console.WriteLine($"Sending {message.Length} bytes");
+        // Console.WriteLine($"Sending {message.Length} bytes");
         await socket.SendAsync(
             message,
             WebSocketMessageType.Text,

@@ -14,7 +14,7 @@ public class Room
     
     public Room(Dictionary<string, Room> rooms)
     {
-        do Id = new Random().Next(0, 10000).ToString("D4");
+        do Id = GenerateString(4);
         while (rooms.ContainsKey(Id));
         
         rooms.Add(Id, this);

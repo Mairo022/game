@@ -4,7 +4,8 @@ public static class Constants
 {
     public static readonly string[] SUITS = ["H", "D", "C", "S"];
     public static readonly string[] RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
-    public static  readonly int[] OWNERS = [0, 1];
+    public static readonly int[] OWNERS = [0, 1];
+    public const string CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     
     public enum RANK_VALUE
     {
