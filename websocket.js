@@ -36,16 +36,16 @@ function ws_connect() {
     ws.onclose = ws_on_close;
     window.socket = ws;
     console.log(ws)
-
-    if (inp_room_id.placeholder[0] !== 'R') {
-        ws_join_room(inp_room_id.placeholder);
-    }
 }
 
 function ws_on_open() {
     ws_behaviour_set_player_connection(1);
     render_overlay_message(null);
     console.log("WS connected");
+
+    if (!inp_room_id.placeholder.startsWith("Ro")) {
+        ws_join_room(inp_room_id.placeholder);
+    }
     // Note: auto connect to room
     // ws_create_room();
 }
