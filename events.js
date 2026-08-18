@@ -10,7 +10,7 @@ import {ws_draw_card} from "./websocket.js";
 import {is_player_turn} from "./validation.js";
 
 function on_deck_click() {
-    if (!is_player_turn(state)) return;
+    if (!is_player_turn(state) || state.is_card_drawn) return;
 
     if (state.is_mp)
     {
