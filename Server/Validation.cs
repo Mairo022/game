@@ -9,7 +9,8 @@ public static class Validation
         var dst = State.GetList(incoming.Target, ref state);
         if (src is null || dst is null ) { Console.WriteLine("Could not find src/dst list"); return false; }
         if (src.Count == 0) return false;
-        
+
+        if (state.IsCardDrawn && !incoming.Src.Equals("player_pile")) return false;
         if (incoming.Target.StartsWith("pile")) return IsValidPileDrop(src, dst);
         if (incoming.Target.StartsWith("stack")) return IsValidStackDrop(src, dst);
         if (incoming.Target.StartsWith("opponent") || incoming.Target.StartsWith("player")) 

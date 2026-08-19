@@ -147,7 +147,7 @@ function handle_game_start(is_mp) {
 function handle_card_drop(src, target, target_type) {
     const card = state[src].at(-1)
 
-    if (!is_valid_move(target, card, state, target_type)) return false;
+    if (!is_valid_move(target, card, state, target_type, src)) return false;
     if (src === "player_pile") state_allow_draw_card();
 
     if (state.is_mp) {

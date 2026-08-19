@@ -132,6 +132,11 @@ function ws_on_message(event) {
         return;
     }
 
+    if (msg.Type === "move_failed") {
+        render_overlay_message_timed(msg.Data)
+        return;
+    }
+
     if (msg.Type === "snap") {
         state_apply_snapshot(msg.Data);
         render_all(state);

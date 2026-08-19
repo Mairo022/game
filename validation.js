@@ -40,8 +40,9 @@ function is_valid_opponent_drop(opponent_id, card_str, state) {
     return false;
 }
 
-function is_valid_move(target_id, card, state, target) {
+function is_valid_move(target_id, card, state, target, src) {
     if (state.turn_player_id !== state.player_id) return false;
+    if (state.is_card_drawn && !src.startsWith("player_pile")) return false;
     if (TARGETS.pile === target) return is_valid_pile_drop(target_id, card, state);
     if (TARGETS.stack === target) return is_valid_stack_drop(target_id, card, state);
     if (TARGETS.opponent_pile === target || TARGETS.opponent_reserve === target) {
