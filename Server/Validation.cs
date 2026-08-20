@@ -3,14 +3,17 @@ using static Server.Constants;
 
 public static class Validation
 {
-    public static bool IsValidMove(MoveMessage incoming, ref GameState state)
+    public static bool IsValidMove(MoveMessage incoming, ref GameState state, bool isPlayer)
     {
         var src = State.GetList(incoming.Src, ref state);
         var dst = State.GetList(incoming.Target, ref state);
         if (src is null || dst is null ) { Console.WriteLine("Could not find src/dst list"); return false; }
         if (src.Count == 0) return false;
 
-        if (state.IsCardDrawn && !incoming.Src.Equals("player_pile")) return false;
+        if (state.IsCardDrawn && (
+                (isPlayer && !incoming.Src.Equals("player_pile")) ||
+                (!isPlayer && !incoming.Src.Equals("opponent_pile"))
+                )) return false;
         if (incoming.Target.StartsWith("pile")) return IsValidPileDrop(src, dst);
         if (incoming.Target.StartsWith("stack")) return IsValidStackDrop(src, dst);
         if (incoming.Target.StartsWith("opponent") || incoming.Target.StartsWith("player")) 

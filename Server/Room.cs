@@ -95,7 +95,7 @@ public class Room
                     if (conn.TurnId == 1) ChangeMovePov(ref move);
                     // Console.WriteLine(move);
                     
-                    if (!Validation.IsValidMove(move, ref _state.GameState))
+                    if (!Validation.IsValidMove(move, ref _state.GameState, conn.TurnId == 0))
                     {
                         Console.WriteLine("Invalid move");
                         await SocketSendAsync(conn.Socket, CreateOutMsg("move_failed", "Invalid move"), conn.Cts.Token);
