@@ -549,7 +549,7 @@ button {
     }
 }
 
-@media (max-width: 1250px) {
+@media (max-width: 1250px) or (max-height: 1200px) {
     :root {
         --card-width: 79px;
         --card-height: 118px;

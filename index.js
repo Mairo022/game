@@ -21,9 +21,9 @@ let card_width = 115;
 let card_overlap = 75;
 
 const mobile = window.matchMedia("(max-width: 750px)");
-const tablet = window.matchMedia("(min-width: 751px) and (max-width: 1250px)");
-const desktop = window.matchMedia("(min-width: 1251px) and (max-width: 1550px)");
-const desktop_small = window.matchMedia("(min-width: 1551px)");
+const tablet = window.matchMedia("(min-width: 751px) and (max-width: 1250px), (min-width: 751px) and (max-height: 1200px)");
+const desktop_small = window.matchMedia("(min-width: 1251px) and (max-width: 1550px) and (min-height: 1201px)");
+const desktop = window.matchMedia("(min-width: 1551px) and (min-height: 1201px)");
 
 mobile.addEventListener("change", handle_mobile_screen);
 tablet.addEventListener("change", handle_tablet_screen);
