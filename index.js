@@ -4,17 +4,24 @@ import {is_player_turn, is_valid_move, is_valid_turn_end} from "./validation.js"
 import {
     reset_state,
     state, state_allow_draw_card, state_end_turn, state_init_decks,
-    state_move_card, state_move_card_mp,
+    state_move_card, state_move_card_mp, state_toggle_stop,
 } from "./state.js";
 import {
-    btn_create_room, btn_end_turn, btn_fix_game, btn_join_room, btn_start_sp,
+    btn_create_room, btn_end_turn, btn_fix_game, btn_join_room, btn_start_sp, btn_stop,
     create_ghost_card_auto_move, el_opponent_ws_status,
     el_player_card_area, el_player_deck_area,
     el_player_reserve, el_player_ws_status,
     inp_room_id
 } from "./elements.js";
 import {create_move_obj, get_coordinates_for_move} from "./utils.js";
-import {ws_create_room, ws_end_turn, ws_get_snap, ws_join_room, ws_send, ws_send_move} from "./websocket.js";
+import {
+    ws_create_room,
+    ws_end_turn,
+    ws_get_snap,
+    ws_join_room,
+    ws_send_move,
+    ws_send_stop, ws_send_stop_end
+} from "./websocket.js";
 import {on_card_pointer_down, on_deck_click, on_pile_pointer_down} from "./events.js";
 
 let card_width = 115;
@@ -67,6 +74,13 @@ btn_end_turn.addEventListener("click", _ => {
     ws_end_turn();
     state_end_turn(state.player_id);
     render_turn_elements(state);
+})
+
+btn_stop.addEventListener("click", _ => {
+    state_toggle_stop()
+    if (state.is_stop) ws_send_stop()
+    else ws_send_stop_end()
+    render_turn_elements(state)
 })
 
 btn_fix_game.addEventListener("click", _ => {

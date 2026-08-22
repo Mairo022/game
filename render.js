@@ -13,9 +13,9 @@ import {
     el_o_deck_left,
     el_o_deck,
     btn_end_turn,
-    el_turn_indicator, el_overlay, el_overlay_msg
+    el_turn_indicator, el_overlay, el_overlay_msg, btn_stop
 } from "./elements.js";
-import {is_valid_turn_end} from "./validation.js";
+import {is_valid_turn_end, is_player_turn} from "./validation.js";
 
 function render_player_cards(state) {
     if (state.player_reserve.length > 0) {
@@ -124,8 +124,17 @@ function render_opponent_cards(state) {
 }
 
 function render_turn_elements(state) {
-    el_turn_indicator.classList.toggle("turn-opponent", state.player_id !== state.turn_player_id);
-    btn_end_turn.disabled = !(state.player_id === state.turn_player_id && is_valid_turn_end(state))
+    const v_is_player_turn = is_player_turn(state);
+    el_turn_indicator.dataset.turn = String(1 & !v_is_player_turn);
+    btn_end_turn.disabled = !(v_is_player_turn && is_valid_turn_end(state))
+    btn_stop.disabled = v_is_player_turn;
+
+    if (state.is_stop) {
+        el_turn_indicator.dataset.turn = "2";
+        btn_stop.textContent = v_is_player_turn ? "Stop" : "Stop End";
+    } else {
+        btn_stop.textContent = "Stop";
+    }
 }
 
 let overlay_timer = null;
@@ -172,5 +181,5 @@ export {
     render_all,
     render_turn_elements,
     render_overlay_message,
-    render_overlay_message_timed
+    render_overlay_message_timed,
 }

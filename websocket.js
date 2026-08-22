@@ -132,8 +132,24 @@ function ws_on_message(event) {
         return;
     }
 
+    if (msg.Type === "stop") {
+        state.is_stop = true;
+        render_turn_elements(state)
+    }
+
+    if (msg.Type === "stop_end") {
+        state.is_stop = false;
+        render_turn_elements(state)
+    }
+
     if (msg.Type === "move_failed") {
         render_overlay_message_timed(msg.Data)
+        return;
+    }
+
+    if (msg.Type === "end_turn_failed") {
+        render_overlay_message_timed("Can not end turn: " + msg.Data)
+        console.error("end_turn_failed:", msg.Data);
         return;
     }
 
@@ -238,6 +254,14 @@ function ws_end_turn() {
     ws_send(`{"Type": "end_turn"}`);
 }
 
+function ws_send_stop() {
+    ws_send(`{"Type": "stop"}`);
+}
+
+function ws_send_stop_end() {
+    ws_send(`{"Type": "stop_end"}`);
+}
+
 export {
     ws,
     ws_send,
@@ -247,5 +271,7 @@ export {
     ws_draw_card,
     ws_send_move,
     ws_get_snap,
-    ws_end_turn
+    ws_end_turn,
+    ws_send_stop,
+    ws_send_stop_end
 }

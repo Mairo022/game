@@ -61,6 +61,8 @@ public static class Validation
     
     public static bool IsValidTurnEnd(Connection conn, ref GameState state)
     {
+        if (state.IsStop) return true;
+        
         var pileLength = conn.TurnId == 0 ? state.PlayerPile.Count : state.OpponentPile.Count;
         var deckLength = conn.TurnId == 0 ? state.PlayerDeck.Count : state.OpponentDeck.Count;
         

@@ -69,7 +69,8 @@
         </div>
         <div id="player" class="row_3 player_area">
             <div id="indicator_box">
-                <div id="indicator_turn" class=""></div>
+                <div id="indicator_turn" data-turn="-1"></div>
+                <button id="stop_trigger" disabled="disabled">Stop</button>
             </div>
             <div id="p_reserve_area" class="card_area">
                 <div id="player_reserve" class="card reserve_card card-up"></div>
@@ -83,7 +84,7 @@
                 <div id="player_deck" class="card main_deck_one card-down"></div>
                 <span class="cards_left"></span>
             </div>
-            <button id="end_turn" disabled="disabled">Next Turn</button>
+            <button id="end_turn" disabled="disabled">End Turn</button>
         </div>
     </section>
 </main>

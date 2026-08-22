@@ -37,6 +37,7 @@ const btn_join_room = document.querySelector("#join_room");
 const btn_start_sp = document.querySelector("#start_sp");
 const btn_fix_game = document.querySelector("#get_snap");
 const btn_end_turn = document.querySelector("#end_turn");
+const btn_stop = document.querySelector("#stop_trigger");
 
 const el_turn_indicator = document.querySelector("#indicator_turn");
 
@@ -105,4 +106,5 @@ export {
     el_turn_indicator,
     el_overlay,
     el_overlay_msg,
+    btn_stop
 }

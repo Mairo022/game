@@ -33,6 +33,7 @@ function create_state() {
         player_id: 0,
         turn_player_id: 0,
         is_card_drawn: false,
+        is_stop: false,
         is_mp: false
     }
 }
@@ -44,6 +45,11 @@ function reset_state() {
 function state_end_turn(player_id) {
     state.turn_player_id = !player_id * 1;
     state.is_card_drawn = false;
+    state.is_stop = false;
+}
+
+function state_toggle_stop() {
+    state.is_stop = !state.is_stop;
 }
 
 function state_draw_card() {
@@ -150,5 +156,6 @@ export {
     state_allow_draw_card,
     state_disable_card_draw,
     state_move_card_mp,
-    state_init_deck_owners
+    state_init_deck_owners,
+    state_toggle_stop
 }

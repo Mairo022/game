@@ -119,9 +119,11 @@ public class State
     public void ChangeTurn() {
         GameState.TurnPlayerId = GameState.TurnPlayerId == 0 ? 1 : 0;
         GameState.IsCardDrawn = false;
+        GameState.IsStop = false;
     }
 
     public void SetCardDrawn(bool val) => GameState.IsCardDrawn = val;
+    public void SetStop(bool val) => GameState.IsStop = val;
     
     public static List<Card>? GetList(string name, ref GameState gameState) => name switch
     {
@@ -192,7 +194,8 @@ public class State
                 Turn: s.TurnPlayerId,
                 IsCardDrawn: s.IsCardDrawn,
                 
-                PlayerId: 0
+                PlayerId: 0,
+                IsStop: s.IsStop ? 1 : 0
             );
         
         return new Snapshot(
@@ -227,7 +230,8 @@ public class State
             Turn: s.TurnPlayerId,
             IsCardDrawn: s.IsCardDrawn,
             
-            PlayerId: 1
+            PlayerId: 1,
+            IsStop: s.IsStop ? 1 : 0
         );
     }
 }
@@ -264,6 +268,7 @@ public struct GameState()
 
     public int TurnPlayerId = 0;
     public bool IsCardDrawn = false;
+    public bool IsStop = false;
 }
 
 public record Snapshot(
@@ -298,5 +303,6 @@ public record Snapshot(
     [property: JsonPropertyName("turn_player_id")] int Turn,
     [property: JsonPropertyName("is_card_drawn")] bool IsCardDrawn,
     
-    [property: JsonPropertyName("player_id")] int PlayerId
+    [property: JsonPropertyName("player_id")] int PlayerId,
+    [property: JsonPropertyName("is_stop")] int IsStop
 );

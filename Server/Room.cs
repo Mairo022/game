@@ -76,6 +76,23 @@ public class Room
 
             if (!Validation.IsPlayerTurn(conn, ref _state.GameState))
             {
+                if (type == "stop")
+                {
+                    if (_state.GameState.IsStop) return;
+                    _state.SetStop(true);
+                    var otherConn = GetOtherConnection(conn);
+                    await SocketSendAsync(otherConn?.Socket, CreateOutMsg("stop", ""), conn.Cts.Token);
+                    return;
+                }
+
+                if (type == "stop_end")
+                {
+                    _state.SetStop(false);
+                    var otherConn = GetOtherConnection(conn);
+                    await SocketSendAsync(otherConn?.Socket, CreateOutMsg("stop_end", ""), conn.Cts.Token);
+                    return;
+                }
+                
                 Console.WriteLine("Not player turn");
                 await SocketSendAsync(conn.Socket, CreateOutMsg("wrong_turn", ""), conn.Cts.Token);
                 return;
