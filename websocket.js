@@ -23,13 +23,16 @@ import {
 } from "./render.js";
 import {inp_room_id} from "./elements.js";
 import {WS_ADDR} from "./constants.js";
+import {set_player_cookie} from "./utils.js";
 
 let ws;
+const ws_addr_inc_params = `${WS_ADDR}?myId=${set_player_cookie()}`
 
 ws_connect();
 
 function ws_connect() {
-    ws = new WebSocket(WS_ADDR);
+    console.log("Connecting..");
+    ws = new WebSocket(ws_addr_inc_params);
     ws.onopen = ws_on_open;
     ws.onmessage = ws_on_message;
     ws.onerror = ws_on_error;
@@ -46,8 +49,6 @@ function ws_on_open() {
     if (!inp_room_id.placeholder.startsWith("Ro")) {
         ws_join_room(inp_room_id.placeholder);
     }
-    // Note: auto connect to room
-    // ws_create_room();
 }
 
 function ws_on_message(event) {
@@ -192,8 +193,8 @@ function ws_on_message(event) {
     }
 }
 
-function ws_on_close() {
-    console.log("WS closed");
+function ws_on_close(e) {
+    console.log("WS closed:", e.reason);
     ws_behaviour_set_player_connection(0);
     ws_behaviour_set_opponent_connection(0);
     ws_behaviour_set_fix_btn(false);

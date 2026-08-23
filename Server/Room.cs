@@ -10,6 +10,9 @@ public class Room
     Connection? _connectionSecond;
     bool _isSelfDestructTriggered;
 
+    string _firstClientId;
+    string _secondClientId;
+
     State _state = new();
     
     public Room(Dictionary<string, Room> rooms)
@@ -210,15 +213,27 @@ public class Room
 
     public async Task<bool> Connect(Connection connection)
     {
-        if (_connectionFirst == null && !ReferenceEquals(connection, _connectionSecond))
+        if (_firstClientId == connection.ClientSideId)
         {
             _connectionFirst = connection;
             _connectionFirst.TurnId = 0;
+        }
+        else if (_secondClientId == connection.ClientSideId)
+        {
+            _connectionSecond = connection;
+            _connectionSecond.TurnId = 1;
+        }
+        else if (_connectionFirst == null && !ReferenceEquals(connection, _connectionSecond))
+        {
+            _connectionFirst = connection;
+            _connectionFirst.TurnId = 0;
+            _firstClientId = connection.ClientSideId;
         }
         else if (_connectionSecond == null && !ReferenceEquals(connection, _connectionFirst))
         {
             _connectionSecond = connection;
             _connectionSecond.TurnId = 1;
+            _secondClientId = connection.ClientSideId;
         }
         else
         {

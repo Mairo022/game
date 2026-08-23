@@ -13,7 +13,7 @@ import {
     el_player_reserve, el_player_ws_status,
     inp_room_id
 } from "./elements.js";
-import {create_move_obj, get_coordinates_for_move} from "./utils.js";
+import {create_move_obj, get_coordinates_for_move, set_player_cookie} from "./utils.js";
 import {
     ws_create_room,
     ws_end_turn,

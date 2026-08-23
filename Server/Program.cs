@@ -16,7 +16,22 @@ _ = Task.Run(() => HeartbeatLoop(connections, TimeSpan.FromSeconds(15)));
 app.Map("/ws", async context =>
 {
     var socket = await context.WebSockets.AcceptWebSocketAsync();
-    var connection = new Connection(socket);
+    
+    var clientSideId = context.Request.Query["myId"].FirstOrDefault();
+    if (clientSideId is null || !clientSideId.All(char.IsAsciiLetterOrDigit) || clientSideId.Length != 4)
+    {
+        socket.CloseAsync(
+            WebSocketCloseStatus.PolicyViolation,
+            "Identity issues",
+            CancellationToken.None);
+
+        await Task.Delay(500);
+        socket.Abort();
+        socket.Dispose();
+        return;
+    }
+    
+    var connection = new Connection(socket, clientSideId);
     Room? room = null;
     var buffer = new byte[128];
 

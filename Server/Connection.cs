@@ -2,9 +2,10 @@ using System.Net.WebSockets;
 
 namespace Server;
 
-public class Connection(WebSocket socket)
+public class Connection(WebSocket socket, string clientSideId)
 {
     public readonly string Id = Guid.NewGuid().ToString();
+    public readonly string ClientSideId =  clientSideId;
     public readonly WebSocket Socket = socket;
     public int TurnId;
     public Room? Room;

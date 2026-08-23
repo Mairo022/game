@@ -80,11 +80,28 @@ function shuffle(arr) {
     }
 }
 
+function set_player_cookie() {
+    let player_id = document.cookie
+        .split("; ")
+        .find(row => row.startsWith("playerId=") && row.length === 13)
+        ?.split("=")[1] ?? null;
+
+    if (player_id) return player_id;
+
+    const week_seconds = 604800;
+    player_id = Math.random().toString(36).slice(2, 6);
+    document.cookie =
+        `playerId=${encodeURIComponent(player_id)}; Max-Age=${week_seconds}; Path=/; SameSite=Lax`;
+
+    return player_id;
+}
+
 export {
     create_card_obj,
     arr_insert_at,
     get_coordinates_for_move,
     create_deck,
     shuffle,
-    create_move_obj
+    create_move_obj,
+    set_player_cookie
 }
