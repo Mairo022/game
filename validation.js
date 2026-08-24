@@ -19,7 +19,15 @@ function is_valid_stack_drop(stack_id, card_str, state) {
     const stack_card = create_card_obj(stack.at(-1))
     const card = create_card_obj(card_str)
 
-    if (stack.length === 0) return card.rank_value === 1;
+    if (stack.length === 0) {
+        const stack_mirror_id = stack_id.slice(0, 6) + (stack_id[6] === 'l' ? 'r' : 'l') + stack_id.slice(7);
+        const stack_mirror = state[stack_mirror_id]
+
+        if (stack_mirror.length > 0 && stack_mirror.at(-1)[0] !== card.suit)
+            return false;
+
+        return card.rank_value === 1;
+    }
     if (stack_card.rank_value + 1 === card.rank_value
         && stack_card.suit === card.suit) return true;
 
