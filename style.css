@@ -31,7 +31,7 @@ body {
     background-size:
             16px 16px,
             18px 18px,
-            100% 100%;
+            120% 120%;
     min-height: 100dvh;
     margin: 0;
     position: relative;
@@ -569,7 +569,7 @@ button {
     }
 }
 
-@media (max-width: 1250px) or (max-height: 1200px) {
+@media (max-width: 1250px) or (max-height: 1150px) {
     :root {
         --card-width: 79px;
         --card-height: 118px;
