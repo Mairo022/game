@@ -15,6 +15,8 @@ public class Room
 
     State _state = new();
     
+    readonly ILogger<Room> _logger =  Log.For<Room>();
+    
     public Room(Dictionary<string, Room> rooms)
     {
         do Id = GenerateString(4);
@@ -67,7 +69,7 @@ public class Room
             if (!TryParseJson(json, out var root, out var type))
             {
                 await SocketSendAsync(conn.Socket, "Unknown message", conn.Cts.Token);
-                Console.WriteLine("Invalid json");
+                _logger.LogInformation("Invalid json");
                 return;
             }
 
@@ -96,7 +98,7 @@ public class Room
                     return;
                 }
                 
-                Console.WriteLine("Not player turn");
+                _logger.LogInformation("Not player turn");
                 await SocketSendAsync(conn.Socket, CreateOutMsg("wrong_turn", ""), conn.Cts.Token);
                 return;
             }
@@ -107,17 +109,17 @@ public class Room
                 {
                     if (!TryDeserializeRoot<MoveMessage>(root, out var move))
                     {
-                        Console.WriteLine("Invalid Move JSON");
+                        _logger.LogInformation("Invalid Move JSON");
                         break;
                     }
 
                     if (move is null) break;
                     if (conn.TurnId == 1) ChangeMovePov(ref move);
-                    // Console.WriteLine(move);
+                    // _logger.LogInformation(move);
                     
                     if (!Validation.IsValidMove(move, ref _state.GameState, conn.TurnId == 0))
                     {
-                        Console.WriteLine("Invalid move");
+                        _logger.LogInformation("Invalid move");
                         await SocketSendAsync(conn.Socket, CreateOutMsg("move_failed", "Invalid move"), conn.Cts.Token);
                         break;
                     }
@@ -193,7 +195,7 @@ public class Room
         }
         catch (Exception e)
         {
-            Console.WriteLine("\nRoom HandleMessage failed: " + e);
+            _logger.LogInformation("\nRoom HandleMessage failed: " + e);
         }
     }
 

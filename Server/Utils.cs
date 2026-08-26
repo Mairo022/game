@@ -10,6 +10,8 @@ public static class Utils
 {
     static Random _random = new();
     
+    static readonly ILogger Logger = Log.For(typeof(Utils));
+    
     public static string GenerateString(int length)
     {
         return new string(
@@ -39,7 +41,7 @@ public static class Utils
     {
         if (socket is null || socket.State != WebSocketState.Open) return;
         
-        Console.WriteLine($"Sending {message.Length} bytes");
+        Logger.LogInformation($"Sending {message.Length} bytes");
         await socket.SendAsync(
             message,
             WebSocketMessageType.Text,

@@ -7,6 +7,7 @@ public static class Heartbeat
 {
     static readonly byte[] _ping = Encoding.UTF8.GetBytes("{\"Type\":\"ping\"}");
     static TimeSpan _pingInterval = TimeSpan.FromSeconds(1);
+    static readonly ILogger Logger = Log.For(typeof(Heartbeat));
     
     public static async Task HeartbeatLoop(Dictionary<string, Connection> connections, TimeSpan timespan)
     {
@@ -38,9 +39,7 @@ public static class Heartbeat
         }
         catch (Exception e)
         {
-            Console.BackgroundColor = ConsoleColor.DarkRed;
-            Console.Error.WriteLine($"[ERROR] Heartbeat failed:\n   {e}");
-            Console.ResetColor();
+            Logger.LogError($"[ERROR] Heartbeat failed:\n   {e}");
         }
     }
 }

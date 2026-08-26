@@ -5,7 +5,11 @@ using Server;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://127.0.0.1:5005");
+builder.Logging.AddSimpleConsole(options => { options.SingleLine = true; });
+
 var app = builder.Build();
+Log.Init(app.Services.GetRequiredService<ILoggerFactory>());
+var logger = Log.For<Program>();
 
 var connections = new Dictionary<string, Connection>();
 var roomsHandler = new RoomsHandler();
@@ -51,7 +55,7 @@ app.Map("/ws", async context =>
 
             if (WebSocketMessageType.Close == result.MessageType)
             {
-                Console.WriteLine("Lost connection");
+                logger.LogInformation("Lost connection");
                 return;
             }
 
@@ -72,7 +76,7 @@ app.Map("/ws", async context =>
                 continue;
             }
 
-            Console.WriteLine($@"Received {msg}");
+            logger.LogInformation($@"Received {msg}");
 
             if (msg.Equals("create_room"))
             {
@@ -96,22 +100,20 @@ app.Map("/ws", async context =>
             room?.HandleMessage(connection, msg);
         }
 
-        Console.WriteLine($"Closed: {connection.Id}");
+        logger.LogInformation($"Closed: {connection.Id}");
     }
     catch (WebSocketException)
     {
-        Console.WriteLine($"Socket disconnected, lost connection with {connection.Id}");
+        logger.LogInformation($"Socket disconnected, lost connection with {connection.Id}");
     }
     catch (OperationCanceledException)
     {
-        Console.WriteLine($"Operation canceled, lost connection with {connection.Id}");
+        logger.LogInformation($"Operation canceled, lost connection with {connection.Id}");
     }
     catch (Exception e)
     {
-        Console.BackgroundColor = ConsoleColor.DarkRed;
-        Console.Error.WriteLine($"[ERROR] Main loop failed:\n   {e}");
-        Console.Error.WriteLine("Last message: " + Encoding.UTF8.GetString(buffer, 0, 128));
-        Console.ResetColor();
+        logger.LogError($"[ERROR] Main loop failed:\n   {e}\n" +
+                        $"Last message: {Encoding.UTF8.GetString(buffer, 0, 128)}");
     }
     finally
     {

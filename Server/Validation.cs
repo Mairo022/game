@@ -3,11 +3,13 @@ using static Server.Constants;
 
 public static class Validation
 {
+    static readonly ILogger Logger = Log.For(typeof(Validation));
+    
     public static bool IsValidMove(MoveMessage incoming, ref GameState state, bool isPlayer)
     {
         var src = State.GetList(incoming.Src, ref state);
         var dst = State.GetList(incoming.Target, ref state);
-        if (src is null || dst is null ) { Console.WriteLine("Could not find src/dst list"); return false; }
+        if (src is null || dst is null ) { Logger.LogInformation("Could not find src/dst list"); return false; }
         if (src.Count == 0) return false;
 
         if (state.IsCardDrawn && (
