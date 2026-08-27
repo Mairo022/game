@@ -43,6 +43,10 @@ const el_turn_indicator = document.querySelector("#indicator_turn");
 
 const el_overlay = document.querySelector("#overlay");
 const el_overlay_msg = document.querySelector("#overlay_msg");
+const el_overlay_dialog = document.querySelector("#dialog");
+const el_overlay_dialog_text = document.querySelector("#dialog_text");
+const btn_overlay_dialog_yes = document.querySelector("#dialog_yes");
+const btn_overlay_dialog_no = document.querySelector("#dialog_no");
 
 function create_ghost_card_auto_move(x, y, value) {
     const ghost = document.createElement("div");
@@ -106,5 +110,9 @@ export {
     el_turn_indicator,
     el_overlay,
     el_overlay_msg,
+    el_overlay_dialog,
+    el_overlay_dialog_text,
+    btn_overlay_dialog_yes,
+    btn_overlay_dialog_no,
     btn_stop
 }

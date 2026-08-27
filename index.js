@@ -1,5 +1,5 @@
 import {pile_names} from "./constants.js"
-import {render_all, render_turn_elements} from "./render.js";
+import {render_all, render_overlay_dialog, render_turn_elements} from "./render.js";
 import {is_player_turn, is_valid_move, is_valid_turn_end} from "./validation.js";
 import {
     reset_state,
@@ -7,7 +7,8 @@ import {
     state_move_card, state_move_card_mp, state_toggle_stop,
 } from "./state.js";
 import {
-    btn_create_room, btn_end_turn, btn_fix_game, btn_join_room, btn_start_sp, btn_stop,
+    btn_create_room, btn_end_turn, btn_fix_game, btn_join_room,
+    btn_overlay_dialog_no, btn_overlay_dialog_yes, btn_start_sp, btn_stop,
     create_ghost_card_auto_move, el_opponent_ws_status,
     el_player_card_area, el_player_deck_area,
     el_player_reserve, el_player_ws_status,
@@ -20,7 +21,9 @@ import {
     ws_get_snap,
     ws_join_room,
     ws_send_move,
-    ws_send_stop, ws_send_stop_end
+    ws_send_stop,
+    ws_send_stop_accept,
+    ws_send_stop_end
 } from "./websocket.js";
 import {on_card_pointer_down, on_deck_click, on_pile_pointer_down} from "./events.js";
 
@@ -28,8 +31,8 @@ let card_width = 115;
 let card_overlap = 75;
 
 const mobile = window.matchMedia("(max-width: 750px)");
-const tablet = window.matchMedia("(min-width: 751px) and (max-width: 1250px), (min-width: 751px) and (max-height: 1200px)");
-const desktop_small = window.matchMedia("(min-width: 1251px) and (max-width: 1550px) and (min-height: 1201px)");
+const tablet = window.matchMedia("(min-width: 751px) and (max-width: 1250px), (min-width: 751px) and (max-height: 1150px)");
+const desktop_small = window.matchMedia("(min-width: 1251px) and (max-width: 1550px) and (min-height: 1151px)");
 const desktop = window.matchMedia("(min-width: 1551px) and (min-height: 1201px)");
 
 mobile.addEventListener("change", handle_mobile_screen);
@@ -65,6 +68,24 @@ handle_mobile_screen(mobile)
 handle_tablet_screen(tablet)
 handle_desktop_screen(desktop)
 handle_desktop_small_screen(desktop_small)
+
+btn_overlay_dialog_yes.addEventListener("click", _ => {
+    if (!state.is_stop || !is_player_turn(state)) return;
+    state_end_turn(state.player_id);
+    ws_send_stop_accept();
+
+    setTimeout(() => {
+        render_overlay_dialog(null)
+    }, 100)
+})
+
+btn_overlay_dialog_no.addEventListener("click", _ => {
+    if (!state.is_stop || !is_player_turn(state)) return;
+    state.is_stop = false;
+    ws_send_stop_end();
+    render_turn_elements(state)
+    render_overlay_dialog(null)
+})
 
 btn_end_turn.addEventListener("click", _ => {
     console.log("end_turn clicked", state);
@@ -185,7 +206,7 @@ function socket_on_get_move(msg) {
     socket_behaviour_auto_move_card(src, target, state);
 }
 
-function socket_behaviour_auto_move_card(src, target, state) {
+function socket_behaviour_auto_move_card(src, target, state, replacement = undefined) {
     const src_coords = get_coordinates_for_move(`#${src}`);
     const target_coords = get_coordinates_for_move(`#${target}`);
 
@@ -202,21 +223,26 @@ function socket_behaviour_auto_move_card(src, target, state) {
 
     ghost.addEventListener('transitionend', () => {
         ghost.remove();
+
+        if (!src.startsWith("pile") && replacement && replacement !== "") {
+            state[src][0] = replacement
+        }
+
         render_all(state);
     });
 }
 
 
 document.addEventListener("keyup", event => {
-    if (event.key === "o") {
-        socket_on_get_move("pile_r_two-pile_r_one-10-1")
-    }
-    if (event.key === "p") {
-        socket_on_get_move("player_pile-pile_r_three-10-1")
-    }
-    if (event.key === "i") {
-        socket_on_get_move("opponent_pile-pile_r_three-10-1")
-    }
+    // if (event.key === "o") {
+    //     socket_on_get_move("pile_r_two-pile_r_one-10-1")
+    // }
+    // if (event.key === "p") {
+    //     socket_on_get_move("player_pile-pile_r_three-10-1")
+    // }
+    // if (event.key === "i") {
+    //     socket_on_get_move("opponent_pile-pile_r_three-10-1")
+    // }
     if (event.key === "s") {
         console.log(state)
     }

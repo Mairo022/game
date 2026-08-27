@@ -13,7 +13,7 @@ import {
     el_o_deck_left,
     el_o_deck,
     btn_end_turn,
-    el_turn_indicator, el_overlay, el_overlay_msg, btn_stop
+    el_turn_indicator, el_overlay, el_overlay_msg, btn_stop, el_overlay_dialog, el_overlay_dialog_text
 } from "./elements.js";
 import {is_valid_turn_end, is_player_turn} from "./validation.js";
 
@@ -139,26 +139,37 @@ function render_turn_elements(state) {
 
 let overlay_timer = null;
 
+function render_overlay_dialog(message) {
+    if (message === null) {
+        el_overlay_dialog_text.textContent = '';
+        el_overlay_dialog.dataset.on = '0';
+        return;
+    }
+
+    el_overlay_dialog_text.textContent = message;
+    el_overlay_dialog.dataset.on = '1';
+}
+
 function render_overlay_message_timed(message, time_ms = 1500) {
     if (overlay_timer) clearTimeout(overlay_timer);
 
-    el_overlay.classList.add("ol-on");
+    el_overlay_msg.dataset.on = '1'
     el_overlay_msg.textContent = message;
 
     overlay_timer = setTimeout(() => {
-        el_overlay.classList.remove("ol-on");
-        el_overlay_msg.textContent = "";
+        el_overlay_msg.dataset.on = '0'
+        el_overlay_msg.textContent = '';
     }, time_ms)
 }
 
 function render_overlay_message(message) {
     if (message === null) {
-        el_overlay.classList.remove("ol-on");
-        el_overlay_msg.textContent = "";
+        el_overlay_msg.dataset.on = '0'
+        el_overlay_msg.textContent = '';
         el_overlay_msg.classList.remove("connecting");
         return;
     }
-    el_overlay.classList.add("ol-on");
+    el_overlay_msg.dataset.on = '1'
     el_overlay_msg.textContent = message;
 
     if (message.startsWith("Connecting"))
@@ -182,4 +193,5 @@ export {
     render_turn_elements,
     render_overlay_message,
     render_overlay_message_timed,
+    render_overlay_dialog
 }

@@ -19,7 +19,8 @@ import {
     render_opponent_cards,
     render_player_cards,
     render_overlay_message,
-    render_overlay_message_timed
+    render_overlay_message_timed,
+    render_overlay_dialog
 } from "./render.js";
 import {inp_room_id} from "./elements.js";
 import {WS_ADDR} from "./constants.js";
@@ -136,11 +137,29 @@ function ws_on_message(event) {
     if (msg.Type === "stop") {
         state.is_stop = true;
         render_turn_elements(state)
+        render_overlay_dialog("You made a mistake");
+        return;
     }
 
     if (msg.Type === "stop_end") {
         state.is_stop = false;
-        render_turn_elements(state)
+        render_turn_elements(state);
+        render_overlay_dialog(null);
+        return;
+    }
+
+    if (msg.Type === "stop_accept") {
+        state_end_turn(msg.Data.TurnId);
+        render_turn_elements(state);
+        socket_behaviour_auto_move_card(msg.Data.Src, msg.Data.Target, state, msg.Data.SrcRepl);
+        return;
+    }
+
+    if (msg.Type === "stop_failed") {
+        render_overlay_message_timed("Stop failed:",msg.Data);
+        state.is_stop = false;
+        render_turn_elements(state);
+        return;
     }
 
     if (msg.Type === "move_failed") {
@@ -263,6 +282,10 @@ function ws_send_stop_end() {
     ws_send(`{"Type": "stop_end"}`);
 }
 
+function ws_send_stop_accept() {
+    ws_send(`{"Type": "stop_accept"}`);
+}
+
 export {
     ws,
     ws_send,
@@ -274,5 +297,6 @@ export {
     ws_get_snap,
     ws_end_turn,
     ws_send_stop,
-    ws_send_stop_end
+    ws_send_stop_end,
+    ws_send_stop_accept
 }

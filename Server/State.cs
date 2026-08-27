@@ -59,7 +59,7 @@ public class State
         od.RemoveRange(i, 5);
     }
 
-    public void MoveCard(MoveMessage move)
+    public void MoveCard(MoveMessageOut move)
     {
         var src = GetList(move.Src, ref GameState)!;
         var dst = GetList(move.Target, ref GameState)!;

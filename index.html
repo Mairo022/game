@@ -10,7 +10,14 @@
 <body>
 <main>
     <section id="overlay">
-        <div id="overlay_msg"></div>
+        <div id="dialog" data-on="0">
+            <div id="dialog_text">You made a mistake</div>
+            <div id="dialog_buttons">
+                <button id="dialog_yes">Accept</button>
+                <button id="dialog_no">Decline</button>
+            </div>
+        </div>
+        <div id="overlay_msg" class="" data-on="0"></div>
     </section>
     <section id="game">
         <div class="connection">

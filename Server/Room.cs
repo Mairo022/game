@@ -14,6 +14,7 @@ public class Room
     string _secondClientId;
 
     State _state = new();
+    MoveMessageOut? _lastMove;
     
     readonly ILogger<Room> _logger =  Log.For<Room>();
     
@@ -83,7 +84,10 @@ public class Room
             {
                 if (type == "stop")
                 {
-                    if (_state.GameState.IsStop) return;
+                    if (_state.GameState.IsStop || _lastMove is null) {
+                        await SocketSendAsync(conn.Socket, CreateOutMsg("stop_failed", "can't stop"), conn.Cts.Token);
+                        return;
+                    }
                     _state.SetStop(true);
                     var otherConn = GetOtherConnection(conn);
                     await SocketSendAsync(otherConn?.Socket, CreateOutMsg("stop", ""), conn.Cts.Token);
@@ -114,7 +118,7 @@ public class Room
                     }
 
                     if (move is null) break;
-                    if (conn.TurnId == 1) ChangeMovePov(ref move);
+                    if (conn.TurnId == 1) ChangeMovePov(ref move); // To player pov, if sent by opponent
                     // _logger.LogInformation(move);
                     
                     if (!Validation.IsValidMove(move, ref _state.GameState, conn.TurnId == 0))
@@ -125,6 +129,7 @@ public class Room
                     }
                     
                     _state.MoveCard(move);
+                    _lastMove = move;
                     
                     var otherConn = GetOtherConnection(conn);
                     var moveOut = new MoveMessageOut{ Type=move.Type, Target = move.Target, Src = move.Src };
@@ -191,12 +196,88 @@ public class Room
                     await SocketSendAsync(otherConn?.Socket, CreateOutMsg("end_turn_op", ""), conn.Cts.Token);
                     break;
                 }
+                
+                case "stop_end":
+                {
+                    if (!_state.GameState.IsStop)
+                    {
+                        await SocketSendAsync(conn.Socket, CreateOutMsg("stop_end_failed", "not stopped"),
+                            conn.Cts.Token);
+                        break;
+                    }
+                    
+                    var otherConn = GetOtherConnection(conn);
+                    
+                    _state.SetStop(false);
+                    await SocketSendAsync(otherConn?.Socket, CreateOutMsg("stop_end", ""), otherConn.Cts.Token);
+                    break;
+                }
+
+                case "stop_accept":
+                {
+                    if (!_state.GameState.IsStop || _lastMove is null)
+                    {
+                        await SocketSendAsync(conn.Socket, CreateOutMsg("stop_accept_failed", "invalid action"),
+                            conn.Cts.Token);
+                        break;
+                    }
+
+                    var connectionP1 = conn.TurnId == 0 ? conn : GetOtherConnection(conn);
+                    var connectionP2 = conn.TurnId == 1 ? conn : GetOtherConnection(conn);
+                    
+                    var undoMoveP1 = new MoveUndoMessageOut
+                    {
+                        Type =_lastMove.Type, 
+                        Src = _lastMove.Target, 
+                        Target = _lastMove.Src,
+                        TurnId = _state.GameState.TurnPlayerId
+                    };
+                    
+                    var undoMoveP2 = new MoveUndoMessageOut
+                    {
+                        Type =_lastMove.Type, 
+                        Src = _lastMove.Target, 
+                        Target = _lastMove.Src, 
+                        TurnId = _state.GameState.TurnPlayerId
+                    };
+                    
+                    ChangeMovePov(ref undoMoveP2);
+
+                    _state.SetStop(false);
+                    _state.MoveCard(undoMoveP1);
+                    _state.ChangeTurn();
+                    _lastMove = null;
+
+                    if (!undoMoveP1.Src.StartsWith("pile"))
+                    {
+                        var srcList = State.GetList(undoMoveP1.Src, ref _state.GameState)!;
+                        if (srcList.Count != 0)
+                        {
+                            var card = srcList.Last();
+                            undoMoveP1.SrcRepl = card.Name;
+                            undoMoveP2.SrcRepl = card.Name;
+                        }
+                    }
+
+                    var _ = SocketSendAsync(connectionP1?.Socket, CreateOutMsg("stop_accept", undoMoveP1), connectionP1.Cts.Token);
+                    var __ = SocketSendAsync(connectionP2?.Socket, CreateOutMsg("stop_accept", undoMoveP2), connectionP2.Cts.Token);
+                    break;
+                }
             }
         }
         catch (Exception e)
         {
             _logger.LogInformation("\nRoom HandleMessage failed: " + e);
         }
+    }
+    
+    void ChangeMovePov(ref MoveUndoMessageOut move)
+    {
+        if (move.Src.StartsWith("player")) move.Src = move.Src.Replace("player", "opponent");
+        else if (move.Src.StartsWith("opponent")) move.Src = move.Src.Replace("opponent", "player");
+                        
+        if (move.Target.StartsWith("player")) move.Target = move.Target.Replace("player", "opponent");
+        else if (move.Target.StartsWith("opponent")) move.Target = move.Target.Replace("opponent", "player");
     }
 
     void ChangeMovePov(ref MoveMessage move)
