@@ -1,5 +1,5 @@
 import {create_card_obj} from "./utils.js";
-import {TARGETS} from "./constants.js";
+import {stack_names, TARGETS} from "./constants.js";
 
 function is_valid_pile_drop(pile_id, card_str, state) {
     const pile = state[pile_id]
@@ -22,12 +22,22 @@ function is_valid_stack_drop(stack_id, card_str, state) {
     if (stack.length === 0) {
         const stack_mirror_id = stack_id.slice(0, 6) + (stack_id[6] === 'l' ? 'r' : 'l') + stack_id.slice(7);
         const stack_mirror = state[stack_mirror_id]
+        console.log(card)
 
-        if (stack_mirror.length > 0 && stack_mirror.at(-1)[0] !== card.suit)
-            return false;
+        if (card.rank_value !== 1) return false;
 
-        return card.rank_value === 1;
+        if (stack_mirror.length > 0)
+            return stack_mirror[0][0] === card.suit;
+
+        for (const state_name of stack_names) {
+            const stack_state = state[state_name];
+            if (stack_state.length === 0) continue;
+            if (stack_state[0][0] === card.suit) return false;
+        }
+
+        return true
     }
+
     if (stack_card.rank_value + 1 === card.rank_value
         && stack_card.suit === card.suit) return true;
 
