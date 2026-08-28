@@ -27,7 +27,7 @@ public class RoomsHandler
     {
         if (joinRoomId.Length != 4 || !_rooms.TryGetValue(joinRoomId, out var roomFound))
         {
-            await SocketSendAsync(socket, CreateOutMsg("join_room_failed", "Not Found"), connection.Cts.Token);
+            await SocketSendAsync(connection, CreateOutMsg("join_room_failed", "Not Found"));
             return null;
         }
         

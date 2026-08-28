@@ -1,5 +1,4 @@
 using System.Net.WebSockets;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using static Server.Constants;
@@ -25,28 +24,16 @@ public static class Utils
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
     
-    public static async Task SocketSendAsync(WebSocket? socket, string message, CancellationToken ct)
+    public static async Task SocketSendAsync(Connection? connection, byte[] message)
     {
-        if (socket is null || socket.State != WebSocketState.Open) return;
-        
-        await socket.SendAsync(
-            Encoding.UTF8.GetBytes(message),
-            WebSocketMessageType.Text,
-            true,
-            ct
-        );
-    }
-    
-    public static async Task SocketSendAsync(WebSocket? socket, byte[] message, CancellationToken ct)
-    {
-        if (socket is null || socket.State != WebSocketState.Open) return;
-        
+        if (connection is null || connection.Socket.State != WebSocketState.Open) return;
         Logger.LogInformation($"Sending {message.Length} bytes");
-        await socket.SendAsync(
+        
+        await connection.Socket.SendAsync(
             message,
             WebSocketMessageType.Text,
             true,
-            ct
+            connection.Cts.Token
         );
     }
     
@@ -81,44 +68,6 @@ public static class Utils
         "K" => RANK_VALUE.K,
         _ => RANK_VALUE.Err
     };
-    
-    public static byte[] ToJson<T>(ref T data)
-    {
-        return JsonSerializer.SerializeToUtf8Bytes(data);
-    }
-    
-    public static IncomingMessage? DeserializeMessage(string json)
-    {
-        using var document = JsonDocument.Parse(json);
-
-        var root = document.RootElement;
-
-        if (!root.TryGetProperty("Type", out var typeProperty))
-        {
-            return null;
-        }
-
-        return typeProperty.GetString() switch
-        {
-            "Move" => root.Deserialize<MoveMessage>(),
-            _      => null
-        };
-    }
-    
-    public static bool TryParseJson(string json, out JsonElement root)
-    {
-        try
-        {
-            var doc = JsonDocument.Parse(json);
-            root = doc.RootElement.Clone();
-            return true;
-        }
-        catch
-        {
-            root = default;
-            return false;
-        }
-    }
     
     public static bool TryParseJson(string json, out JsonElement rootOut, out string typeOut)
     {
