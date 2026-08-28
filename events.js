@@ -31,9 +31,8 @@ function on_deck_click() {
     render_player_cards(state)
 }
 
-//todo: fix doublecards when picking up text also
 function on_pile_pointer_down(e) {
-    if (!is_player_turn(state)) return;
+    if (!is_player_turn(state) || ghost.el) return;
 
     const card = e.target
     const value = card.dataset.value;
