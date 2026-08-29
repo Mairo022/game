@@ -8,6 +8,7 @@
     --card-width: 115px;
     --card-height: 172px;
     --card-overlap: -74px;
+    --card-border-radius: 11px;
     --pile-margin: 6px;
     --field-columns-gap: 2.5em;
     --ws_status_sz: 24px;
@@ -85,12 +86,19 @@ button {
     text-align: center;
     outline: none;
     border-radius: 4px;
-    border: 1px solid hsl(0 0% 55%);
-    background-color: hsl(0 0% 95%);
+    background-color: hsl(180 4% 94% / 0.90);
+    border: 1px solid hsl(0 0% 45%);
+
+
+    &:disabled {
+        border: 1px solid hsl(0 0% 55%);
+        background-color: hsl(180 4% 85% / 0.95);
+    }
 
     &:enabled:hover {
-        background-color: hsl(0 0% 90%);
+        background-color: hsl(190 10% 96%);
         border: 1px solid hsl(0 0% 45%);
+        box-shadow: 0 0 1px hsl(0 0% 40%);
     }
 }
 
@@ -162,6 +170,7 @@ button {
     width: 100%;
     max-width: 840px;
     justify-self: center;
+    overflow:hidden;
 }
 
 #player_deck:hover {
@@ -270,7 +279,7 @@ button {
     flex-shrink: 0;
     /*box-shadow: 0 0 2px #00000050;*/
     border: 1px solid #8d8d8d;
-    border-radius: 11px;
+    border-radius: var(--card-border-radius);
     z-index: 10;
 }
 
@@ -354,7 +363,7 @@ button {
     height: var(--card-height);
     width: var(--card-width);
     flex-shrink: 0;
-    border-radius: 11px;
+    border-radius: var(--card-border-radius);
 
     &:before {
         box-sizing: border-box;
@@ -362,7 +371,7 @@ button {
         width: calc(var(--card-width) - 2px);
         height: calc(var(--card-height) - 2px);
         border: 1px solid #00000044;
-        border-radius: 11px;
+        border-radius: var(--card-border-radius);
         position: absolute;
         top: 1px;
         left: 2px;
@@ -401,7 +410,7 @@ button {
         position: absolute;
         top: 1px;
         border: 1px solid #00000044;
-        border-radius: 11px;
+        border-radius: var(--card-border-radius);
         z-index: 0;
         background-color: rgba(0,0,0,0.05);
     }
@@ -628,6 +637,7 @@ button {
         --card-overlap: -62px;
         --pile-margin: 6px;
         --field-columns-gap: 0.25em;
+        --card-border-radius: 7px;
     }
 
     .player_area, .game_field_row {
@@ -673,6 +683,7 @@ button {
         --field-columns-gap: 0em;
         --pile-margin: 2px;
         --ws_status_sz: 16px;
+        --card-border-radius: 5px;
     }
 
     .connection {

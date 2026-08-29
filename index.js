@@ -114,9 +114,12 @@ btn_start_sp.addEventListener("click", (e) => {
     handle_game_start(false);
 })
 
-inp_room_id.addEventListener("keyup", _ => {
-    btn_join_room.disabled = inp_room_id.value.trim() === "";
+inp_room_id.addEventListener("input", _ => {
+    btn_join_room.disabled = inp_room_id.value.trim().length === 0;
 })
+inp_room_id.addEventListener("keydown", (e) => {
+    if (e.key === 'Enter') ws_join_room(inp_room_id.value.toUpperCase());
+});
 
 btn_join_room.addEventListener("click", _ => {
     ws_join_room(inp_room_id.value.toUpperCase());
@@ -129,6 +132,7 @@ btn_create_room.addEventListener("click", _ => {
 function ws_behaviour_set_room(room_id) {
     inp_room_id.value = "";
     inp_room_id.placeholder = room_id;
+    btn_join_room.disabled = true;
 }
 
 function ws_behaviour_set_player_connection(is_connected) {

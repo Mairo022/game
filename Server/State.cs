@@ -18,7 +18,13 @@ public class State
 {
     public GameState GameState = new();
 
-    public State() => CreateDecks();
+    public State() {
+        CreateDecks();
+        if (GameState.PlayerReserve.Last().RankValue < GameState.OpponentReserve.Last().RankValue)
+        {
+            GameState.TurnPlayerId = 1;
+        }
+    }
 
     void CreateDecks()
     {
@@ -32,6 +38,8 @@ public class State
         
         var pd = GameState.PlayerDeck;
         var od = GameState.OpponentDeck;
+
+        pd.Reverse();
         
         Shuffle(pd);
         Shuffle(od);
